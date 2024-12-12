@@ -36,16 +36,17 @@ public class QuizService {
         );
     }
 
-    public Quiz createQuiz(QuizCreateDTO quizCreateDTO) {
-        Quiz quiz = new Quiz();
-        quiz.setAnswer(quizCreateDTO.getAnswer());
-        quiz.setHint1(quizCreateDTO.getHint1());
-        quiz.setHint2(quizCreateDTO.getHint2());
-        quiz.setHint3(quizCreateDTO.getHint3());
-        quiz.setHint4(quizCreateDTO.getHint4());
-        quiz.setHint5(quizCreateDTO.getHint5());
-        quiz.setHint6(quizCreateDTO.getHint6());
+    public void createQuiz(QuizCreateDTO quizCreateDTO) {
+        Quiz quiz = Quiz.builder()
+            .answer(quizCreateDTO.getAnswer())
+            .hint1(quizCreateDTO.getHint1())
+            .hint2(quizCreateDTO.getHint2())
+            .hint3(quizCreateDTO.getHint3())
+            .hint4(quizCreateDTO.getHint4())
+            .hint5(quizCreateDTO.getHint5())
+            .hint6(quizCreateDTO.getHint6())
+            .build();
 
-        return quizRepository.save(quiz);
+        quizRepository.save(quiz);
     }
 }
