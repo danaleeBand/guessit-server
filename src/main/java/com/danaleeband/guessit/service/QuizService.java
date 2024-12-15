@@ -4,7 +4,6 @@ import com.danaleeband.guessit.model.dto.QuizCreateDTO;
 import com.danaleeband.guessit.model.dto.QuizResponseDto;
 import com.danaleeband.guessit.model.entity.Quiz;
 import com.danaleeband.guessit.repository.QuizRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -14,7 +13,6 @@ public class QuizService {
 
     private final QuizRepository quizRepository;
 
-    @Autowired
     public QuizService(QuizRepository quizRepository) {
         this.quizRepository = quizRepository;
     }
