@@ -1,6 +1,7 @@
 package com.danaleeband.guessit.model.dto;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
@@ -15,5 +16,8 @@ public class RoomCreateDTO {
 
     @NotBlank
     @Size(max = 25)
-    private String name;
+    private String password;
+
+    @NotNull
+    private Boolean Locked;
 }
