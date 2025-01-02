@@ -2,7 +2,9 @@ package com.danaleeband.guessit.repository;
 
 import com.danaleeband.guessit.model.entity.Room;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.stereotype.Repository;
 
-public interface RoomRepository extends CrudRepository<Room, Integer> {
+@Repository
+public interface RoomRepository extends CrudRepository<Room, String> {
 
 }
