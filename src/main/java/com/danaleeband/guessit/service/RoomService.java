@@ -31,16 +31,22 @@ public class RoomService {
 
         List<Long> quizIds = quizService.getRandomQuizzes(10);
 
-        Player player = new Player(roomCreateDTO.getName());
+        Player player = new Player("이름");
         List<Player> players = List.of(player);
 
         String title = roomCreateDTO.getTitle();
 
-        Room room = new Room(roomId, title, status, players, quizIds, quizIds.get(0));
+        String password = roomCreateDTO.getPassword();
+
+        Boolean locked = roomCreateDTO.getLocked();
+
+        Room room = new Room(roomId, title, status, locked, password, players, quizIds, quizIds.get(0));
         redisTemplate.opsForHash().putAll(RoomConstants.ROOM_PREFIX + roomId, Map.of(
             "id", room.getId(),
             "title", roomCreateDTO.getTitle(),
             "status", room.getStatus().toString(),
+            "rocked", roomCreateDTO.getLocked(),
+            "password", roomCreateDTO.getPassword(),
             "players", players,
             "quizIds", quizIds
         ));
