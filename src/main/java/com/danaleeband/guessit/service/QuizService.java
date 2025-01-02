@@ -4,6 +4,8 @@ import com.danaleeband.guessit.model.dto.QuizCreateDTO;
 import com.danaleeband.guessit.model.dto.QuizResponseDto;
 import com.danaleeband.guessit.model.entity.Quiz;
 import com.danaleeband.guessit.repository.QuizRepository;
+import java.util.List;
+import java.util.stream.Collectors;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -47,5 +49,10 @@ public class QuizService {
             .build();
 
         quizRepository.save(quiz);
+    }
+
+    public List<Long> getRandomQuizzes(int limit) {
+        List<Quiz> quizzes = quizRepository.findTop10ByOrderByRandom(); // 적절한 메소드 사용
+        return quizzes.stream().map(Quiz::getId).collect(Collectors.toList());
     }
 }
