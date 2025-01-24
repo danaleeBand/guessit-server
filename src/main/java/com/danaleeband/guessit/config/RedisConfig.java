@@ -1,6 +1,5 @@
 package com.danaleeband.guessit.config;
 
-import com.danaleeband.guessit.model.entity.Player;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
@@ -31,17 +30,8 @@ public class RedisConfig {
         RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
         redisTemplate.setConnectionFactory(redisConnectionFactory());
 
-        // Key-Value 형태로 직렬화를 수행합니다.
         redisTemplate.setKeySerializer(new StringRedisSerializer());
-
-        // Object 타입에 대해 Jackson 직렬화 방식으로 설정
         redisTemplate.setValueSerializer(new Jackson2JsonRedisSerializer<>(Object.class));
-
-        // Hash Key-Value 형태로 직렬화를 수행합니다.
-        redisTemplate.setHashKeySerializer(new StringRedisSerializer());
-
-        // Player 객체에 대한 직렬화는 다른 방식으로 처리
-        redisTemplate.setHashValueSerializer(new Jackson2JsonRedisSerializer<>(Player.class));
 
         return redisTemplate;
     }

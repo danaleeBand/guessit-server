@@ -21,18 +21,17 @@ public class Room {
     private List<Long> quizIds;
     private Long quizId;
 
-    public Room(String id, String code, String title, GAME_STATUS status, Boolean locked, String password,
+    public Room(String id, String code, String title, Boolean locked, String password,
         List<Player> players,
-        List<Long> quizIds,
-        Long quizId) {
+        List<Long> quizIds) {
         this.id = id;
         this.code = code;
         this.title = title;
-        this.status = status;
+        this.status = GAME_STATUS.WAITING;
         this.locked = locked;
         this.password = password;
         this.players = players;
         this.quizIds = quizIds;
-        this.quizId = quizId;
+        this.quizId = quizIds.get(0);
     }
 }
