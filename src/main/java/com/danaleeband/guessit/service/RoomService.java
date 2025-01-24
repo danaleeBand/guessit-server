@@ -6,7 +6,7 @@ import static com.danaleeband.guessit.domain.RoomConstants.ROOM_PREFIX;
 import com.danaleeband.guessit.model.dto.RoomCreateDTO;
 import com.danaleeband.guessit.model.entity.Player;
 import com.danaleeband.guessit.model.entity.Room;
-import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
@@ -70,49 +70,15 @@ public class RoomService {
         return "#" + code;
     }
 
-    public Set<String> getAllRooms() throws JsonProcessingException {
-        System.out.println("접근은 하니?");
+    public List<Room> getAllRooms() {
+        Set<String> roomKeys = redisTemplate.keys(ROOM_PREFIX + "*");
         List<Room> rooms = new ArrayList<>();
+        for (String roomKey : roomKeys) {
+            Room room = new ObjectMapper().convertValue(redisTemplate.opsForValue().get(roomKey), Room.class);
+            rooms.add(room);
+        }
 
-        Set<String> roomKeys = redisTemplate.keys("room:*");
-        return roomKeys;
-//        System.out.println(roomKeys);
-//
-//        if (roomKeys != null) {
-//            for (String roomKey : roomKeys) {
-//                System.out.println(roomKey);
-//
-//                Map<Object, Object> roomData = redisTemplate.opsForHash().entries(roomKey);
-//                System.out.println(roomData);
-//
-//                String id = (String) roomData.get("id");
-//                String code = (String) roomData.get("code");
-//                String title = (String) roomData.get("title");
-//                GAME_STATUS status = GAME_STATUS.valueOf((String) roomData.get("status"));
-//                Boolean locked = (Boolean) roomData.get("locked");
-//                String password = (String) roomData.get("password");
-//
-//                String playersJson = (String) roomData.get("players");
-//                List<Player> players = playersJson != null ?
-//                    new ObjectMapper().readValue(playersJson, new TypeReference<List<Player>>() {
-//                    }) : new ArrayList<>();
-//
-//                List<Object> quizIdsList = redisTemplate.opsForList().range("room:" + id + ":quizzes", 0, -1);
-//                List<Long> quizIds = new ArrayList<>();
-//                if (quizIdsList != null && !quizIdsList.isEmpty()) {
-//                    for (Object quizId : quizIdsList) {
-//                        quizIds.add(Long.parseLong(quizId.toString()));
-//                    }
-//                }
-//
-//                Long firstQuizId = !quizIds.isEmpty() ? quizIds.get(0) : null;
-//
-//                Room room = new Room(id, code, title, status, locked, password, players, quizIds, firstQuizId);
-//                rooms.add(room);
-//            }
-//        }
-//
-//        return rooms;
+        return rooms;
     }
 
 }

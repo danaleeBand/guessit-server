@@ -3,11 +3,10 @@ package com.danaleeband.guessit.controller;
 import com.danaleeband.guessit.model.dto.RoomCreateDTO;
 import com.danaleeband.guessit.model.entity.Room;
 import com.danaleeband.guessit.service.RoomService;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import java.util.Set;
+import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -28,14 +27,14 @@ public class RoomController {
 
     @PostMapping()
     @Operation(summary = "방 생성", description = "방 생성")
-    public Room createRoom(@RequestBody @Valid RoomCreateDTO roomCreateDTO) throws JsonProcessingException {
+    public Room createRoom(@RequestBody @Valid RoomCreateDTO roomCreateDTO) {
         return roomService.createRoom(roomCreateDTO);
     }
 
     @GetMapping()
     @Operation(summary = "방 전체 조회", description = "방 전체 조회")
-    public ResponseEntity<Set<String>> getAllRooms() throws JsonProcessingException {
-        Set<String> rooms = roomService.getAllRooms();
+    public ResponseEntity<List<Room>> getAllRooms() {
+        List<Room> rooms = roomService.getAllRooms();
         return ResponseEntity.ok(rooms);
     }
 }

@@ -2,13 +2,14 @@ package com.danaleeband.guessit.model.entity;
 
 import com.danaleeband.guessit.domain.GAME_STATUS;
 import jakarta.persistence.Id;
+import java.io.Serializable;
 import java.util.List;
 import lombok.Getter;
 import org.springframework.data.redis.core.RedisHash;
 
 @Getter
 @RedisHash("room")
-public class Room {
+public class Room implements Serializable {
 
     @Id
     private String id;
@@ -20,6 +21,9 @@ public class Room {
     private List<Player> players;
     private List<Long> quizIds;
     private Long quizId;
+
+    public Room() {
+    }
 
     public Room(String id, String code, String title, Boolean locked, String password,
         List<Player> players,
