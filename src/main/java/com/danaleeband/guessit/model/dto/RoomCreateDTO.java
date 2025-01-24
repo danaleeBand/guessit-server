@@ -14,8 +14,6 @@ public class RoomCreateDTO {
     @Size(max = 25)
     private String title;
 
-    @NotBlank
-    @Size(max = 25)
     private String password;
 
     @NotNull
