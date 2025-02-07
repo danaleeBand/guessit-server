@@ -19,4 +19,8 @@ public class PlayerService {
 
         return new PlayerCreateResponseDto(playerId);
     }
+
+    public Player findPlayerById(Long id) {
+        return playerRepository.findById(id);
+    }
 }
