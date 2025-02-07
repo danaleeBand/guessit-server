@@ -18,6 +18,7 @@ public class Room implements Serializable {
     private GAME_STATUS status;
     private Boolean locked;
     private String password;
+    private Player creator;
     private List<Player> players;
     private List<Long> quizIds;
     private Long quizId;
@@ -26,14 +27,14 @@ public class Room implements Serializable {
     }
 
     public Room(String id, String code, String title, Boolean locked, String password,
-        List<Player> players,
-        List<Long> quizIds) {
+        Player creator, List<Player> players, List<Long> quizIds) {
         this.id = id;
         this.code = code;
         this.title = title;
         this.status = GAME_STATUS.WAITING;
         this.locked = locked;
         this.password = password;
+        this.creator = creator;
         this.players = players;
         this.quizIds = quizIds;
         this.quizId = quizIds.get(0);
