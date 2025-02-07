@@ -1,23 +1,28 @@
 package com.danaleeband.guessit.model.entity;
 
+import jakarta.persistence.Id;
 import java.io.Serializable;
 import lombok.Getter;
-import lombok.Setter;
 import org.springframework.data.redis.core.RedisHash;
 
 @Getter
-@Setter
 @RedisHash("player")
 public class Player implements Serializable {
 
+    @Id
     private String playerId;
-    private String name;
+    private String nickname;
+    private String profileUrl;
 
     public Player() {
     }
 
-    public Player(String playerId, String name) {
+    public Player(String nickname, String profileUrl) {
+        this.nickname = nickname;
+        this.profileUrl = profileUrl;
+    }
+
+    public void assignId(String playerId) {
         this.playerId = playerId;
-        this.name = name;
     }
 }
