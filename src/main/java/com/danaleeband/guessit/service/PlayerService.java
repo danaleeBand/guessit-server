@@ -1,6 +1,7 @@
 package com.danaleeband.guessit.service;
 
-import com.danaleeband.guessit.model.dto.PlayerCreateDTO;
+import com.danaleeband.guessit.model.dto.PlayerCreateRequestDto;
+import com.danaleeband.guessit.model.dto.PlayerCreateResponseDto;
 import com.danaleeband.guessit.model.entity.Player;
 import com.danaleeband.guessit.repository.PlayerRepository;
 import lombok.RequiredArgsConstructor;
@@ -12,8 +13,10 @@ public class PlayerService {
 
     private final PlayerRepository playerRepository;
 
-    public Player createPlayer(PlayerCreateDTO playerCreateDTO) {
-        Player player = new Player(playerCreateDTO.getNickname(), playerCreateDTO.getProfileUrl());
-        return playerRepository.save(player);
+    public PlayerCreateResponseDto createPlayer(PlayerCreateRequestDto playerCreateRequestDto) {
+        Player player = new Player(playerCreateRequestDto.getNickname(), playerCreateRequestDto.getProfileUrl());
+        Long playerId = playerRepository.save(player);
+
+        return new PlayerCreateResponseDto(playerId);
     }
 }

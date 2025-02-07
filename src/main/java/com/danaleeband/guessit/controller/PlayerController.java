@@ -1,7 +1,7 @@
 package com.danaleeband.guessit.controller;
 
-import com.danaleeband.guessit.model.dto.PlayerCreateDTO;
-import com.danaleeband.guessit.model.entity.Player;
+import com.danaleeband.guessit.model.dto.PlayerCreateRequestDto;
+import com.danaleeband.guessit.model.dto.PlayerCreateResponseDto;
 import com.danaleeband.guessit.service.PlayerService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -22,7 +22,7 @@ public class PlayerController {
 
     @PostMapping()
     @Operation(summary = "플레이어 생성", description = "플레이어 생성")
-    public Player createPlayer(@RequestBody @Valid PlayerCreateDTO playerCreateDTO) {
-        return playerService.createPlayer(playerCreateDTO);
+    public PlayerCreateResponseDto createPlayer(@RequestBody @Valid PlayerCreateRequestDto playerCreateRequestDto) {
+        return playerService.createPlayer(playerCreateRequestDto);
     }
 }

@@ -4,7 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 
 @Getter
-public class PlayerCreateDTO {
+public class PlayerCreateRequestDto {
 
     @NotBlank
     private String nickname;

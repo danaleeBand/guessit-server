@@ -10,16 +10,16 @@ import org.springframework.stereotype.Repository;
 public class PlayerRedisRepository implements PlayerRepository {
 
     private static final String KEY_PREFIX = "player:";
-    private static final String INCREMENT_KEY = "player.increment"; // 자동 증가 ID 관리
+    private static final String INCREMENT_KEY = "player.increment";
 
     private final RedisTemplate<String, Object> redisTemplate;
 
     @Override
-    public Player save(Player player) {
-        String playerKey = KEY_PREFIX + redisTemplate.opsForValue().increment(INCREMENT_KEY);
-        player.assignId(playerKey);
-        redisTemplate.opsForValue().set(playerKey, player);
+    public Long save(Player player) {
+        Long playerId = redisTemplate.opsForValue().increment(INCREMENT_KEY);
+        player.assignId(playerId);
+        redisTemplate.opsForValue().set(KEY_PREFIX + playerId, player);
 
-        return player;
+        return playerId;
     }
 }

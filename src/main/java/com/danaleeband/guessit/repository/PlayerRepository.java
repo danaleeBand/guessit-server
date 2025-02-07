@@ -4,5 +4,5 @@ import com.danaleeband.guessit.model.entity.Player;
 
 public interface PlayerRepository {
 
-    Player save(Player player);
+    Long save(Player player);
 }
