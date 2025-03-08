@@ -11,25 +11,22 @@ import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class RoomService {
 
     private final RedisTemplate<String, Object> redisTemplate;
     private final QuizService quizService;
-
-    @Autowired
-    public RoomService(RedisTemplate<String, Object> redisTemplate, QuizService quizService) {
-        this.redisTemplate = redisTemplate;
-        this.quizService = quizService;
-    }
+    private final PlayerService playerService;
 
     public Room createRoom(RoomCreateDTO roomCreateDTO) {
         String roomKey = generateKey();
         List<Long> quizIds = quizService.getRandomQuizzes(10);
+        Player creator = playerService.findPlayerById(roomCreateDTO.getCreatorId());
 
         Room room = new Room(
             roomKey,
@@ -37,7 +34,8 @@ public class RoomService {
             roomCreateDTO.getTitle(),
             roomCreateDTO.getLocked(),
             roomCreateDTO.getPassword(),
-            List.of(new Player("개설자id", "개설자닉네임")),
+            creator,
+            List.of(creator),
             quizIds);
 
         redisTemplate.opsForValue().set(roomKey, room);

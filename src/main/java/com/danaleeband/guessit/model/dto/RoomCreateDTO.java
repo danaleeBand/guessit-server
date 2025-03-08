@@ -4,10 +4,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
-import lombok.Setter;
 
 @Getter
-@Setter
 public class RoomCreateDTO {
 
     @NotBlank
@@ -17,5 +15,8 @@ public class RoomCreateDTO {
     private String password;
 
     @NotNull
-    private Boolean Locked;
+    private Boolean locked;
+
+    @NotNull
+    private Long creatorId;
 }
