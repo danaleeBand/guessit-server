@@ -10,7 +10,7 @@ import org.springframework.data.redis.core.RedisHash;
 public class Player implements Serializable {
 
     @Id
-    private Long playerId;
+    private long id;
     private String nickname;
     private String profileUrl;
 
@@ -22,7 +22,7 @@ public class Player implements Serializable {
         this.profileUrl = profileUrl;
     }
 
-    public void assignId(Long playerId) {
-        this.playerId = playerId;
+    public void assignId(Long id) {
+        this.id = id;
     }
 }
