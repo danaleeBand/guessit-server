@@ -1,6 +1,6 @@
 package com.danaleeband.guessit.repository;
 
-import com.danaleeband.guessit.model.entity.Room;
+import com.danaleeband.guessit.entity.Room;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 

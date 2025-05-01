@@ -1,6 +1,6 @@
 package com.danaleeband.guessit.repository;
 
-import com.danaleeband.guessit.model.entity.Player;
+import com.danaleeband.guessit.entity.Player;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;

@@ -3,9 +3,9 @@ package com.danaleeband.guessit.service;
 import static com.danaleeband.guessit.domain.RoomConstants.ROOM_INCREMENT_KEY;
 import static com.danaleeband.guessit.domain.RoomConstants.ROOM_PREFIX;
 
-import com.danaleeband.guessit.model.dto.RoomCreateDTO;
-import com.danaleeband.guessit.model.entity.Player;
-import com.danaleeband.guessit.model.entity.Room;
+import com.danaleeband.guessit.controller.dto.RoomCreateDto;
+import com.danaleeband.guessit.entity.Player;
+import com.danaleeband.guessit.entity.Room;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.security.SecureRandom;
 import java.util.ArrayList;
@@ -23,7 +23,7 @@ public class RoomService {
     private final QuizService quizService;
     private final PlayerService playerService;
 
-    public Room createRoom(RoomCreateDTO roomCreateDTO) {
+    public Room createRoom(RoomCreateDto roomCreateDTO) {
         String roomKey = generateKey();
         List<Long> quizIds = quizService.getRandomQuizzes(10);
         Player creator = playerService.findPlayerById(roomCreateDTO.getCreatorId());

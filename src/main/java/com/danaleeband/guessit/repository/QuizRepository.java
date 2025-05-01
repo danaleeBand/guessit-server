@@ -1,6 +1,6 @@
 package com.danaleeband.guessit.repository;
 
-import com.danaleeband.guessit.model.entity.Quiz;
+import com.danaleeband.guessit.entity.Quiz;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

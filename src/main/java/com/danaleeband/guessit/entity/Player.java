@@ -1,4 +1,4 @@
-package com.danaleeband.guessit.model.entity;
+package com.danaleeband.guessit.entity;
 
 import jakarta.persistence.Id;
 import java.io.Serializable;

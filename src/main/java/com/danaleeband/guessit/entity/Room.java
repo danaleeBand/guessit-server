@@ -1,4 +1,4 @@
-package com.danaleeband.guessit.model.entity;
+package com.danaleeband.guessit.entity;
 
 import com.danaleeband.guessit.domain.GAME_STATUS;
 import jakarta.persistence.Id;
