@@ -1,4 +1,4 @@
-package com.danaleeband.guessit.model.dto;
+package com.danaleeband.guessit.controller.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -7,7 +7,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class QuizCreateDTO {
+public class QuizCreateDto {
 
     @NotBlank
     @Size(max = 25)

@@ -1,6 +1,5 @@
-package com.danaleeband.guessit.model.entity;
+package com.danaleeband.guessit.entity;
 
-import com.danaleeband.guessit.domain.GAME_STATUS;
 import jakarta.persistence.Id;
 import java.io.Serializable;
 import java.util.List;
@@ -12,11 +11,11 @@ import org.springframework.data.redis.core.RedisHash;
 public class Room implements Serializable {
 
     @Id
-    private String id;
+    private long id;
     private String code;
     private String title;
-    private GAME_STATUS status;
-    private Boolean locked;
+    private boolean playing;
+    private boolean locked;
     private String password;
     private Player creator;
     private List<Player> players;
@@ -26,17 +25,20 @@ public class Room implements Serializable {
     public Room() {
     }
 
-    public Room(String id, String code, String title, Boolean locked, String password,
+    public Room(String code, String title, boolean locked, String password,
         Player creator, List<Player> players, List<Long> quizIds) {
-        this.id = id;
         this.code = code;
         this.title = title;
-        this.status = GAME_STATUS.WAITING;
+        this.playing = false;
         this.locked = locked;
         this.password = password;
         this.creator = creator;
         this.players = players;
         this.quizIds = quizIds;
         this.quizId = quizIds.get(0);
+    }
+
+    public void assignId(long id) {
+        this.id = id;
     }
 }

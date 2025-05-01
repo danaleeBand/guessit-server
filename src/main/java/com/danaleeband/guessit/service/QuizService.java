@@ -1,8 +1,8 @@
 package com.danaleeband.guessit.service;
 
-import com.danaleeband.guessit.model.dto.QuizCreateDTO;
-import com.danaleeband.guessit.model.dto.QuizResponseDto;
-import com.danaleeband.guessit.model.entity.Quiz;
+import com.danaleeband.guessit.controller.dto.QuizCreateDto;
+import com.danaleeband.guessit.controller.dto.QuizResponseDto;
+import com.danaleeband.guessit.entity.Quiz;
 import com.danaleeband.guessit.repository.QuizRepository;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -37,7 +37,7 @@ public class QuizService {
         );
     }
 
-    public void createQuiz(QuizCreateDTO quizCreateDTO) {
+    public void createQuiz(QuizCreateDto quizCreateDTO) {
         Quiz quiz = Quiz.builder()
             .answer(quizCreateDTO.getAnswer())
             .hint1(quizCreateDTO.getHint1())

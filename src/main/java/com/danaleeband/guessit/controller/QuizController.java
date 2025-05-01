@@ -1,7 +1,7 @@
 package com.danaleeband.guessit.controller;
 
-import com.danaleeband.guessit.model.dto.QuizCreateDTO;
-import com.danaleeband.guessit.model.dto.QuizResponseDto;
+import com.danaleeband.guessit.controller.dto.QuizCreateDto;
+import com.danaleeband.guessit.controller.dto.QuizResponseDto;
 import com.danaleeband.guessit.service.QuizService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/quizzes")
+@RequestMapping("/api/v1/quizzes")
 @Tag(name = "퀴즈")
 public class QuizController {
 
@@ -46,7 +46,7 @@ public class QuizController {
         @ApiResponse(responseCode = "400", description = "Bad Request"),
     })
     @ResponseStatus(HttpStatus.CREATED)
-    public void createQuiz(@RequestBody @Valid QuizCreateDTO quizCreateDTO) {
+    public void createQuiz(@RequestBody @Valid QuizCreateDto quizCreateDTO) {
         quizService.createQuiz(quizCreateDTO);
     }
 

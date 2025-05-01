@@ -1,7 +1,8 @@
 package com.danaleeband.guessit.controller;
 
-import com.danaleeband.guessit.model.dto.RoomCreateDTO;
-import com.danaleeband.guessit.model.entity.Room;
+import com.danaleeband.guessit.controller.dto.RoomCreateRequestDto;
+import com.danaleeband.guessit.controller.dto.RoomCreateResponseDto;
+import com.danaleeband.guessit.entity.Room;
 import com.danaleeband.guessit.service.RoomService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -15,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/rooms")
+@RequestMapping("/api/v1/rooms")
 @Tag(name = "방")
 public class RoomController {
 
@@ -27,8 +28,8 @@ public class RoomController {
 
     @PostMapping()
     @Operation(summary = "방 생성", description = "방 생성")
-    public Room createRoom(@RequestBody @Valid RoomCreateDTO roomCreateDTO) {
-        return roomService.createRoom(roomCreateDTO);
+    public RoomCreateResponseDto createRoom(@RequestBody @Valid RoomCreateRequestDto roomCreateRequestDto) {
+        return new RoomCreateResponseDto(roomService.createRoom(roomCreateRequestDto));
     }
 
     @GetMapping()

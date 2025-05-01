@@ -1,10 +1,14 @@
 package com.danaleeband.guessit.repository;
 
-import com.danaleeband.guessit.model.entity.Room;
-import org.springframework.data.repository.CrudRepository;
+import com.danaleeband.guessit.entity.Room;
+import java.util.List;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface RoomRepository extends CrudRepository<Room, String> {
+public interface RoomRepository {
+
+    Long save(Room room);
+
+    List<Room> findAll();
 
 }

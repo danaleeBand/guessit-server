@@ -1,4 +1,4 @@
-package com.danaleeband.guessit.model.entity;
+package com.danaleeband.guessit.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

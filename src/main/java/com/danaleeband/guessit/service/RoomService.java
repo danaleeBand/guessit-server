@@ -1,17 +1,15 @@
 package com.danaleeband.guessit.service;
 
-import static com.danaleeband.guessit.domain.RoomConstants.ROOM_INCREMENT_KEY;
-import static com.danaleeband.guessit.domain.RoomConstants.ROOM_PREFIX;
-
-import com.danaleeband.guessit.model.dto.RoomCreateDTO;
-import com.danaleeband.guessit.model.entity.Player;
-import com.danaleeband.guessit.model.entity.Room;
+import com.danaleeband.guessit.controller.dto.RoomCreateRequestDto;
+import com.danaleeband.guessit.entity.Player;
+import com.danaleeband.guessit.entity.Room;
+import com.danaleeband.guessit.global.RoomListEvent;
+import com.danaleeband.guessit.repository.RoomRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.security.SecureRandom;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -22,30 +20,27 @@ public class RoomService {
     private final RedisTemplate<String, Object> redisTemplate;
     private final QuizService quizService;
     private final PlayerService playerService;
+    private final ObjectMapper objectMapper;
+    private final RoomRepository roomRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
-    public Room createRoom(RoomCreateDTO roomCreateDTO) {
-        String roomKey = generateKey();
+    public long createRoom(RoomCreateRequestDto roomCreateRequestDTO) {
         List<Long> quizIds = quizService.getRandomQuizzes(10);
-        Player creator = playerService.findPlayerById(roomCreateDTO.getCreatorId());
+        Player creator = playerService.findPlayerById(roomCreateRequestDTO.getCreatorId());
 
         Room room = new Room(
-            roomKey,
             generateUniqueRoomCode(),
-            roomCreateDTO.getTitle(),
-            roomCreateDTO.getLocked(),
-            roomCreateDTO.getPassword(),
+            roomCreateRequestDTO.getTitle(),
+            roomCreateRequestDTO.isLocked(),
+            roomCreateRequestDTO.getPassword(),
             creator,
             List.of(creator),
             quizIds);
 
-        redisTemplate.opsForValue().set(roomKey, room);
+        Long id = roomRepository.save(room);
+        eventPublisher.publishEvent(new RoomListEvent("UPDATE"));
 
-        return room;
-    }
-
-    private String generateKey() {
-        Long id = redisTemplate.opsForValue().increment(ROOM_INCREMENT_KEY);
-        return ROOM_PREFIX + id;
+        return id;
     }
 
     private String generateUniqueRoomCode() {
@@ -69,14 +64,7 @@ public class RoomService {
     }
 
     public List<Room> getAllRooms() {
-        Set<String> roomKeys = redisTemplate.keys(ROOM_PREFIX + "*");
-        List<Room> rooms = new ArrayList<>();
-        for (String roomKey : roomKeys) {
-            Room room = new ObjectMapper().convertValue(redisTemplate.opsForValue().get(roomKey), Room.class);
-            rooms.add(room);
-        }
-
-        return rooms;
+        return roomRepository.findAll();
     }
 
 }

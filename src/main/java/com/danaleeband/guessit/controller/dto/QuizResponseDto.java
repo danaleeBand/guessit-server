@@ -1,4 +1,4 @@
-package com.danaleeband.guessit.model.dto;
+package com.danaleeband.guessit.controller.dto;
 
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;

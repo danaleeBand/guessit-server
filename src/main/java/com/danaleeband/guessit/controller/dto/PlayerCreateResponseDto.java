@@ -1,4 +1,4 @@
-package com.danaleeband.guessit.model.dto;
+package com.danaleeband.guessit.controller.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

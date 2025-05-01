@@ -1,7 +1,7 @@
 package com.danaleeband.guessit.controller;
 
-import com.danaleeband.guessit.model.dto.PlayerCreateRequestDto;
-import com.danaleeband.guessit.model.dto.PlayerCreateResponseDto;
+import com.danaleeband.guessit.controller.dto.PlayerCreateRequestDto;
+import com.danaleeband.guessit.controller.dto.PlayerCreateResponseDto;
 import com.danaleeband.guessit.service.PlayerService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/players")
+@RequestMapping("/api/v1/players")
 @Tag(name = "플레이어")
 @RequiredArgsConstructor
 public class PlayerController {
