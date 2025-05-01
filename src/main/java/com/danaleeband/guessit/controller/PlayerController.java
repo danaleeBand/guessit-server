@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/players")
+@RequestMapping("/api/v1/players")
 @Tag(name = "플레이어")
 @RequiredArgsConstructor
 public class PlayerController {

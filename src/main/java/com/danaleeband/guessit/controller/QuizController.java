@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/quizzes")
+@RequestMapping("/api/v1/quizzes")
 @Tag(name = "퀴즈")
 public class QuizController {
 
