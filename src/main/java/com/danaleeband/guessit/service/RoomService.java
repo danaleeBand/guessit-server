@@ -1,16 +1,12 @@
 package com.danaleeband.guessit.service;
 
-import static com.danaleeband.guessit.domain.RoomConstants.ROOM_INCREMENT_KEY;
-import static com.danaleeband.guessit.domain.RoomConstants.ROOM_PREFIX;
-
-import com.danaleeband.guessit.controller.dto.RoomCreateDto;
+import com.danaleeband.guessit.controller.dto.RoomCreateRequestDto;
 import com.danaleeband.guessit.entity.Player;
 import com.danaleeband.guessit.entity.Room;
+import com.danaleeband.guessit.repository.RoomRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.security.SecureRandom;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -23,30 +19,22 @@ public class RoomService {
     private final QuizService quizService;
     private final PlayerService playerService;
     private final ObjectMapper objectMapper;
+    private final RoomRepository roomRepository;
 
-    public Room createRoom(RoomCreateDto roomCreateDTO) {
-        String roomKey = generateKey();
+    public long createRoom(RoomCreateRequestDto roomCreateRequestDTO) {
         List<Long> quizIds = quizService.getRandomQuizzes(10);
-        Player creator = playerService.findPlayerById(roomCreateDTO.getCreatorId());
+        Player creator = playerService.findPlayerById(roomCreateRequestDTO.getCreatorId());
 
         Room room = new Room(
-            roomKey,
             generateUniqueRoomCode(),
-            roomCreateDTO.getTitle(),
-            roomCreateDTO.isLocked(),
-            roomCreateDTO.getPassword(),
+            roomCreateRequestDTO.getTitle(),
+            roomCreateRequestDTO.isLocked(),
+            roomCreateRequestDTO.getPassword(),
             creator,
             List.of(creator),
             quizIds);
 
-        redisTemplate.opsForValue().set(roomKey, room);
-
-        return room;
-    }
-
-    private String generateKey() {
-        Long id = redisTemplate.opsForValue().increment(ROOM_INCREMENT_KEY);
-        return ROOM_PREFIX + id;
+        return roomRepository.save(room);
     }
 
     private String generateUniqueRoomCode() {
@@ -70,14 +58,7 @@ public class RoomService {
     }
 
     public List<Room> getAllRooms() {
-        Set<String> roomKeys = redisTemplate.keys(ROOM_PREFIX + "*");
-        List<Room> rooms = new ArrayList<>();
-        for (String roomKey : roomKeys) {
-            Room room = objectMapper.convertValue(redisTemplate.opsForValue().get(roomKey), Room.class);
-            rooms.add(room);
-        }
-
-        return rooms;
+        return roomRepository.findAll();
     }
 
 }

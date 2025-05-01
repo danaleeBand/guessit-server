@@ -1,6 +1,7 @@
 package com.danaleeband.guessit.controller;
 
-import com.danaleeband.guessit.controller.dto.RoomCreateDto;
+import com.danaleeband.guessit.controller.dto.RoomCreateRequestDto;
+import com.danaleeband.guessit.controller.dto.RoomCreateResponseDto;
 import com.danaleeband.guessit.entity.Room;
 import com.danaleeband.guessit.service.RoomService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -27,8 +28,8 @@ public class RoomController {
 
     @PostMapping()
     @Operation(summary = "방 생성", description = "방 생성")
-    public Room createRoom(@RequestBody @Valid RoomCreateDto roomCreateDTO) {
-        return roomService.createRoom(roomCreateDTO);
+    public RoomCreateResponseDto createRoom(@RequestBody @Valid RoomCreateRequestDto roomCreateRequestDto) {
+        return new RoomCreateResponseDto(roomService.createRoom(roomCreateRequestDto));
     }
 
     @GetMapping()

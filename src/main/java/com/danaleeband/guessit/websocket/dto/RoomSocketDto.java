@@ -9,7 +9,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public class RoomSocketDto implements Serializable {
 
-    private String id;
+    private long id;
     private String code;
     private String title;
     private boolean playing;

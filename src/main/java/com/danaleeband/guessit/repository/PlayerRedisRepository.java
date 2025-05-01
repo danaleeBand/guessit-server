@@ -1,5 +1,8 @@
 package com.danaleeband.guessit.repository;
 
+import static com.danaleeband.guessit.global.Constants.PLAYER_INCREMENT_KEY;
+import static com.danaleeband.guessit.global.Constants.PLAYER_PREFIX;
+
 import com.danaleeband.guessit.entity.Player;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -10,24 +13,21 @@ import org.springframework.stereotype.Repository;
 @RequiredArgsConstructor
 public class PlayerRedisRepository implements PlayerRepository {
 
-    private static final String KEY_PREFIX = "player:";
-    private static final String INCREMENT_KEY = "player.increment";
-
     private final RedisTemplate<String, Object> redisTemplate;
     private final ObjectMapper objectMapper;
 
     @Override
     public Long save(Player player) {
-        Long playerId = redisTemplate.opsForValue().increment(INCREMENT_KEY);
+        Long playerId = redisTemplate.opsForValue().increment(PLAYER_INCREMENT_KEY);
         player.assignId(playerId);
-        redisTemplate.opsForValue().set(KEY_PREFIX + playerId, player);
+        redisTemplate.opsForValue().set(PLAYER_PREFIX + playerId, player);
 
         return playerId;
     }
 
     @Override
     public Player findById(Long id) {
-        String playerKey = KEY_PREFIX + id;
+        String playerKey = PLAYER_PREFIX + id;
         return objectMapper.convertValue(redisTemplate.opsForValue().get(playerKey), Player.class);
     }
 }

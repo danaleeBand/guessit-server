@@ -11,7 +11,7 @@ import org.springframework.data.redis.core.RedisHash;
 public class Room implements Serializable {
 
     @Id
-    private String id;
+    private long id;
     private String code;
     private String title;
     private boolean playing;
@@ -25,9 +25,8 @@ public class Room implements Serializable {
     public Room() {
     }
 
-    public Room(String id, String code, String title, boolean locked, String password,
+    public Room(String code, String title, boolean locked, String password,
         Player creator, List<Player> players, List<Long> quizIds) {
-        this.id = id;
         this.code = code;
         this.title = title;
         this.playing = false;
@@ -37,5 +36,9 @@ public class Room implements Serializable {
         this.players = players;
         this.quizIds = quizIds;
         this.quizId = quizIds.get(0);
+    }
+
+    public void assignId(long id) {
+        this.id = id;
     }
 }

@@ -6,7 +6,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 
 @Getter
-public class RoomCreateDto {
+public class RoomCreateRequestDto {
 
     @NotBlank
     @Size(max = 25)
