@@ -22,5 +22,7 @@ public class WebSocketConfig implements WebSocketConfigurer {
         log.info("Websocket handlers Registered");
         registry.addHandler(roomListWebSocketHandler, "/ws/rooms")
             .setAllowedOriginPatterns("*");
+        registry.addHandler(roomListWebSocketHandler, "/ws/room/{roomId}")
+            .setAllowedOriginPatterns("*");
     }
 }

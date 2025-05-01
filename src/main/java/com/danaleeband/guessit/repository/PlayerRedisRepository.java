@@ -14,6 +14,7 @@ public class PlayerRedisRepository implements PlayerRepository {
     private static final String INCREMENT_KEY = "player.increment";
 
     private final RedisTemplate<String, Object> redisTemplate;
+    private final ObjectMapper objectMapper;
 
     @Override
     public Long save(Player player) {
@@ -27,6 +28,6 @@ public class PlayerRedisRepository implements PlayerRepository {
     @Override
     public Player findById(Long id) {
         String playerKey = KEY_PREFIX + id;
-        return new ObjectMapper().convertValue(redisTemplate.opsForValue().get(playerKey), Player.class);
+        return objectMapper.convertValue(redisTemplate.opsForValue().get(playerKey), Player.class);
     }
 }

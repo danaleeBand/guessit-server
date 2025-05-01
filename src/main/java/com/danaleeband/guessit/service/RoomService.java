@@ -22,6 +22,7 @@ public class RoomService {
     private final RedisTemplate<String, Object> redisTemplate;
     private final QuizService quizService;
     private final PlayerService playerService;
+    private final ObjectMapper objectMapper;
 
     public Room createRoom(RoomCreateDto roomCreateDTO) {
         String roomKey = generateKey();
@@ -72,7 +73,7 @@ public class RoomService {
         Set<String> roomKeys = redisTemplate.keys(ROOM_PREFIX + "*");
         List<Room> rooms = new ArrayList<>();
         for (String roomKey : roomKeys) {
-            Room room = new ObjectMapper().convertValue(redisTemplate.opsForValue().get(roomKey), Room.class);
+            Room room = objectMapper.convertValue(redisTemplate.opsForValue().get(roomKey), Room.class);
             rooms.add(room);
         }
 
