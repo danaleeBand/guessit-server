@@ -1,6 +1,6 @@
 package com.danaleeband.guessit.websocket;
 
-import com.danaleeband.guessit.entity.Room;
+import com.danaleeband.guessit.service.RoomService;
 import com.danaleeband.guessit.websocket.dto.RoomSocketDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
@@ -22,6 +22,7 @@ public class RoomListWebSocketHandler extends TextWebSocketHandler {
 
     private final ObjectMapper objectMapper;
     private final Set<WebSocketSession> sessions = ConcurrentHashMap.newKeySet();
+    private final RoomService roomService;
 
     private static final Logger log = LoggerFactory.getLogger(RoomListWebSocketHandler.class);
 
@@ -29,6 +30,7 @@ public class RoomListWebSocketHandler extends TextWebSocketHandler {
     public void afterConnectionEstablished(WebSocketSession session) {
         log.info("Session Connected: {}", session);
         sessions.add(session);
+        sendRoomList(session, toRoomSocketList());
     }
 
     @Override
@@ -37,9 +39,9 @@ public class RoomListWebSocketHandler extends TextWebSocketHandler {
         sessions.remove(session);
     }
 
-    public void broadcastRoomList(List<Room> roomList) {
+    public void broadcastRoomList() {
         for (WebSocketSession session : sessions) {
-            sendRoomList(session, toRoomSocketList(roomList));
+            sendRoomList(session, toRoomSocketList());
         }
     }
 
@@ -51,8 +53,8 @@ public class RoomListWebSocketHandler extends TextWebSocketHandler {
         }
     }
 
-    private List<RoomSocketDto> toRoomSocketList(List<Room> roomList) {
-        return roomList.stream()
+    private List<RoomSocketDto> toRoomSocketList() {
+        return roomService.getAllRooms().stream()
             .map(RoomSocketDto::toRoomSocketDto)
             .toList();
     }

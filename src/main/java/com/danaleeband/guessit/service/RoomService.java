@@ -3,11 +3,13 @@ package com.danaleeband.guessit.service;
 import com.danaleeband.guessit.controller.dto.RoomCreateRequestDto;
 import com.danaleeband.guessit.entity.Player;
 import com.danaleeband.guessit.entity.Room;
+import com.danaleeband.guessit.global.RoomListEvent;
 import com.danaleeband.guessit.repository.RoomRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.security.SecureRandom;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -20,6 +22,7 @@ public class RoomService {
     private final PlayerService playerService;
     private final ObjectMapper objectMapper;
     private final RoomRepository roomRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     public long createRoom(RoomCreateRequestDto roomCreateRequestDTO) {
         List<Long> quizIds = quizService.getRandomQuizzes(10);
@@ -34,7 +37,10 @@ public class RoomService {
             List.of(creator),
             quizIds);
 
-        return roomRepository.save(room);
+        Long id = roomRepository.save(room);
+        eventPublisher.publishEvent(new RoomListEvent("UPDATE"));
+
+        return id;
     }
 
     private String generateUniqueRoomCode() {
