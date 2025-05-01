@@ -4,6 +4,7 @@ import static com.danaleeband.guessit.global.Constants.ROOM_INCREMENT_KEY;
 import static com.danaleeband.guessit.global.Constants.ROOM_PREFIX;
 
 import com.danaleeband.guessit.entity.Room;
+import com.danaleeband.guessit.websocket.RoomListWebSocketHandler;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,13 +19,15 @@ public class RoomRedisRepository implements RoomRepository {
 
     private final RedisTemplate<String, Object> redisTemplate;
     private final ObjectMapper objectMapper;
+    private final RoomListWebSocketHandler roomListWebSocketHandler;
 
     @Override
     public Long save(Room room) {
         Long roomId = redisTemplate.opsForValue().increment(ROOM_INCREMENT_KEY);
         room.assignId(roomId);
         redisTemplate.opsForValue().set(ROOM_PREFIX + roomId, room);
-
+        roomListWebSocketHandler.broadcastRoomList(findAll());
+        
         return roomId;
     }
 
@@ -36,7 +39,7 @@ public class RoomRedisRepository implements RoomRepository {
             Room room = objectMapper.convertValue(redisTemplate.opsForValue().get(roomKey), Room.class);
             rooms.add(room);
         }
-        
+
         return rooms;
     }
 }

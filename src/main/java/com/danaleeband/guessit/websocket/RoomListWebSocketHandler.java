@@ -1,6 +1,6 @@
 package com.danaleeband.guessit.websocket;
 
-import com.danaleeband.guessit.service.RoomService;
+import com.danaleeband.guessit.entity.Room;
 import com.danaleeband.guessit.websocket.dto.RoomSocketDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
@@ -20,17 +20,15 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 @RequiredArgsConstructor
 public class RoomListWebSocketHandler extends TextWebSocketHandler {
 
-    private final RoomService roomService;
     private final ObjectMapper objectMapper;
     private final Set<WebSocketSession> sessions = ConcurrentHashMap.newKeySet();
 
     private static final Logger log = LoggerFactory.getLogger(RoomListWebSocketHandler.class);
 
     @Override
-    public void afterConnectionEstablished(WebSocketSession session) throws IOException {
+    public void afterConnectionEstablished(WebSocketSession session) {
         log.info("Session Connected: {}", session);
         sessions.add(session);
-        sendRoomList(session);
     }
 
     @Override
@@ -39,10 +37,23 @@ public class RoomListWebSocketHandler extends TextWebSocketHandler {
         sessions.remove(session);
     }
 
-    private void sendRoomList(WebSocketSession session) throws IOException {
-        List<RoomSocketDto> roomList = roomService.getAllRooms().stream()
+    public void broadcastRoomList(List<Room> roomList) {
+        for (WebSocketSession session : sessions) {
+            sendRoomList(session, toRoomSocketList(roomList));
+        }
+    }
+
+    private void sendRoomList(WebSocketSession session, List<RoomSocketDto> roomList) {
+        try {
+            session.sendMessage(new TextMessage(objectMapper.writeValueAsString(roomList)));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private List<RoomSocketDto> toRoomSocketList(List<Room> roomList) {
+        return roomList.stream()
             .map(RoomSocketDto::toRoomSocketDto)
             .toList();
-        session.sendMessage(new TextMessage(objectMapper.writeValueAsString(roomList)));
     }
 }
