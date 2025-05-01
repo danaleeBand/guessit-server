@@ -12,7 +12,7 @@ public class RoomSocketDto implements Serializable {
     private String id;
     private String code;
     private String title;
-    private String status;
+    private boolean playing;
     private boolean locked;
     private int playerCount;
 
@@ -21,8 +21,8 @@ public class RoomSocketDto implements Serializable {
             room.getId(),
             room.getCode(),
             room.getTitle(),
-            room.getStatus().name(),
-            room.getLocked(),
+            room.isPlaying(),
+            room.isLocked(),
             room.getPlayers().size()
         );
     }

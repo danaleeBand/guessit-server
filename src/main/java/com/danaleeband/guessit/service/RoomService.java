@@ -33,7 +33,7 @@ public class RoomService {
             roomKey,
             generateUniqueRoomCode(),
             roomCreateDTO.getTitle(),
-            roomCreateDTO.getLocked(),
+            roomCreateDTO.isLocked(),
             roomCreateDTO.getPassword(),
             creator,
             List.of(creator),

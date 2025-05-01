@@ -15,7 +15,7 @@ public class RoomCreateDto {
     private String password;
 
     @NotNull
-    private Boolean locked;
+    private boolean locked;
 
     @NotNull
     private Long creatorId;
