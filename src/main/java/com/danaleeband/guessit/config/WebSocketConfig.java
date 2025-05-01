@@ -20,6 +20,6 @@ public class WebSocketConfig implements WebSocketConfigurer {
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
         log.info("Registering websocket handlers");
-        registry.addHandler(webSocketHandler, "/websocket").setAllowedOriginPatterns("*");
+        registry.addHandler(webSocketHandler, "/websocket").setAllowedOrigins("http://localhost:5173");
     }
 }
