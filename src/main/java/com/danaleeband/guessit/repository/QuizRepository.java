@@ -2,11 +2,14 @@ package com.danaleeband.guessit.repository;
 
 import com.danaleeband.guessit.entity.Quiz;
 import java.util.List;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
+import java.util.Optional;
 
-public interface QuizRepository extends JpaRepository<Quiz, Long> {
+public interface QuizRepository {
 
-    @Query("SELECT q FROM Quiz q ORDER BY random() LIMIT 10")
+    Optional<Quiz> findById(Long aLong);
+
+    <S extends Quiz> S save(S entity);
+
     List<Quiz> findTop10ByOrderByRandom();
+
 }
