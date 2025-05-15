@@ -11,4 +11,5 @@ public interface RoomRepository {
 
     List<Room> findAll();
 
+    Room findById(Long id);
 }
