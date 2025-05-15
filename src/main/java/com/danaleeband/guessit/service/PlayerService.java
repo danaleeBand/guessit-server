@@ -5,7 +5,9 @@ import com.danaleeband.guessit.controller.dto.PlayerCreateResponseDto;
 import com.danaleeband.guessit.entity.Player;
 import com.danaleeband.guessit.repository.PlayerRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 @RequiredArgsConstructor
@@ -21,6 +23,7 @@ public class PlayerService {
     }
 
     public Player findPlayerById(Long id) {
-        return playerRepository.findById(id);
+        return playerRepository.findById(id)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
     }
 }

@@ -1,5 +1,7 @@
 package com.danaleeband.guessit.entity;
 
+import static com.danaleeband.guessit.global.Constants.PLAYER_LIMIT;
+
 import jakarta.persistence.Id;
 import java.io.Serializable;
 import java.util.List;
@@ -40,5 +42,13 @@ public class Room implements Serializable {
 
     public void assignId(long id) {
         this.id = id;
+    }
+
+    public void addPlayer(Player player) {
+        players.add(player);
+
+        if (players.size() == PLAYER_LIMIT) {
+            this.playing = true;
+        }
     }
 }

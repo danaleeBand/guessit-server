@@ -1,7 +1,11 @@
 package com.danaleeband.guessit.service;
 
+import static com.danaleeband.guessit.global.Constants.ALPHABET_NUMBER;
+import static com.danaleeband.guessit.global.Constants.ROOM_CODE_LENGTH;
+
 import com.danaleeband.guessit.controller.dto.RoomCreateRequestDto;
-import com.danaleeband.guessit.controller.dto.RoomPasswordRequestDto;
+import com.danaleeband.guessit.controller.dto.RoomJoinReponseDto;
+import com.danaleeband.guessit.controller.dto.RoomJoinRequestDto;
 import com.danaleeband.guessit.entity.Player;
 import com.danaleeband.guessit.entity.Room;
 import com.danaleeband.guessit.global.RoomListEvent;
@@ -15,7 +19,9 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 @RequiredArgsConstructor
@@ -27,8 +33,6 @@ public class RoomService {
     private final RoomRepository roomRepository;
     private final ApplicationEventPublisher eventPublisher;
 
-    private static final String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    private static final int ROOM_CODE_LENGTH = 6;
 
     public long createRoom(RoomCreateRequestDto roomCreateRequestDTO) {
         List<Long> quizIds = quizService.getRandomQuizzes();
@@ -67,7 +71,7 @@ public class RoomService {
         StringBuilder sb = new StringBuilder(ROOM_CODE_LENGTH);
 
         for (int i = 0; i < ROOM_CODE_LENGTH; i++) {
-            char c = CHARACTERS.charAt(random.nextInt(CHARACTERS.length()));
+            char c = ALPHABET_NUMBER.charAt(random.nextInt(ALPHABET_NUMBER.length()));
             sb.append(c);
         }
 
@@ -86,8 +90,23 @@ public class RoomService {
             .toList();
     }
 
-    public boolean checkRoomPassword(long roomId, @Valid RoomPasswordRequestDto roomPasswordRequestDto) {
-        return roomPasswordRequestDto.getPassword()
-            .equals(roomRepository.findById(roomId).getPassword());
+    public RoomJoinReponseDto joinRoom(long roomId, @Valid RoomJoinRequestDto roomJoinRequestDto) {
+        Room room = roomRepository.findById(roomId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+        if (room.isLocked() && !room.getPassword().equals(roomJoinRequestDto.getPassword())) {
+            return RoomJoinReponseDto.getInvalidPasswordResponse();
+        }
+
+        if (room.isPlaying()) {
+            return RoomJoinReponseDto.getFullRoomResponse();
+        }
+
+        Player player = playerService.findPlayerById(roomJoinRequestDto.getPlayerId());
+        room.addPlayer(player);
+        roomRepository.updatePlayer(room);
+        eventPublisher.publishEvent(new RoomListEvent("UPDATE"));
+        
+        return RoomJoinReponseDto.getValidResponse();
     }
 }
