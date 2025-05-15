@@ -18,10 +18,10 @@ public class RoomJoinReponseDto {
     }
 
     public static RoomJoinReponseDto getInvalidPasswordResponse() {
-        return new RoomJoinReponseDto(false, "🔒비밀번호를 확인해주세요");
+        return new RoomJoinReponseDto(false, "🔒 비밀번호를 확인해주세요");
     }
 
     public static RoomJoinReponseDto getFullRoomResponse() {
-        return new RoomJoinReponseDto(false, "⚠️방이 가득 찼습니다");
+        return new RoomJoinReponseDto(false, "⚠️ 방이 가득 찼습니다");
     }
 }

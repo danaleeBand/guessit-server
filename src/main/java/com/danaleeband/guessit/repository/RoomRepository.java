@@ -13,4 +13,6 @@ public interface RoomRepository {
     List<Room> findAll();
 
     Optional<Room> findById(Long id);
+
+    void updatePlayer(Room room);
 }

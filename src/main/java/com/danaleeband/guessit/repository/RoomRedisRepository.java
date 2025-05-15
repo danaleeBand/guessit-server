@@ -47,4 +47,9 @@ public class RoomRedisRepository implements RoomRepository {
             objectMapper.convertValue(redisTemplate.opsForValue().get(ROOM_PREFIX + id), Room.class));
     }
 
+    public void updatePlayer(Room room) {
+        redisTemplate.opsForValue().set(ROOM_PREFIX + room.getId(), room);
+    }
+
+
 }
