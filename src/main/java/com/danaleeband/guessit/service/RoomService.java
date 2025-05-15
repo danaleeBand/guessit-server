@@ -6,6 +6,7 @@ import com.danaleeband.guessit.entity.Room;
 import com.danaleeband.guessit.global.RoomListEvent;
 import com.danaleeband.guessit.repository.RoomRepository;
 import java.security.SecureRandom;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -73,6 +74,14 @@ public class RoomService {
 
     public List<Room> getAllRooms() {
         return roomRepository.findAll();
+    }
+
+    public List<Room> getAllOrderedRooms() {
+        return roomRepository.findAll()
+            .stream()
+            .sorted(Comparator.comparing(Room::isPlaying)
+                .thenComparing(Room::getId, Comparator.reverseOrder()))
+            .toList();
     }
 
 }

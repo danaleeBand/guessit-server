@@ -54,7 +54,7 @@ public class RoomListWebSocketHandler extends TextWebSocketHandler {
     }
 
     private List<RoomSocketDto> toRoomSocketList() {
-        return roomService.getAllRooms().stream()
+        return roomService.getAllOrderedRooms().stream()
             .map(RoomSocketDto::toRoomSocketDto)
             .toList();
     }
