@@ -1,11 +1,14 @@
 package com.danaleeband.guessit.service;
 
 import com.danaleeband.guessit.controller.dto.RoomCreateRequestDto;
+import com.danaleeband.guessit.controller.dto.RoomPasswordRequestDto;
 import com.danaleeband.guessit.entity.Player;
 import com.danaleeband.guessit.entity.Room;
 import com.danaleeband.guessit.global.RoomListEvent;
 import com.danaleeband.guessit.repository.RoomRepository;
+import jakarta.validation.Valid;
 import java.security.SecureRandom;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -75,4 +78,16 @@ public class RoomService {
         return roomRepository.findAll();
     }
 
+    public List<Room> getAllOrderedRooms() {
+        return roomRepository.findAll()
+            .stream()
+            .sorted(Comparator.comparing(Room::isPlaying)
+                .thenComparing(Room::getId, Comparator.reverseOrder()))
+            .toList();
+    }
+
+    public boolean checkRoomPassword(long roomId, @Valid RoomPasswordRequestDto roomPasswordRequestDto) {
+        return roomPasswordRequestDto.getPassword()
+            .equals(roomRepository.findById(roomId).getPassword());
+    }
 }

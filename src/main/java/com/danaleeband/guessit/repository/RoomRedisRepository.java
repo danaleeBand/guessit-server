@@ -39,4 +39,10 @@ public class RoomRedisRepository implements RoomRepository {
 
         return rooms;
     }
+
+    @Override
+    public Room findById(Long id) {
+        return objectMapper.convertValue(redisTemplate.opsForValue().get(ROOM_PREFIX + id), Room.class);
+    }
+
 }
