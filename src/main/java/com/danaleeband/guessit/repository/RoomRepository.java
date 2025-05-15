@@ -2,6 +2,7 @@ package com.danaleeband.guessit.repository;
 
 import com.danaleeband.guessit.entity.Room;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -11,5 +12,5 @@ public interface RoomRepository {
 
     List<Room> findAll();
 
-    Room findById(Long id);
+    Optional<Room> findById(Long id);
 }

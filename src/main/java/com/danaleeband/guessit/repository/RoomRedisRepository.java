@@ -7,6 +7,7 @@ import com.danaleeband.guessit.entity.Room;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -41,8 +42,9 @@ public class RoomRedisRepository implements RoomRepository {
     }
 
     @Override
-    public Room findById(Long id) {
-        return objectMapper.convertValue(redisTemplate.opsForValue().get(ROOM_PREFIX + id), Room.class);
+    public Optional<Room> findById(Long id) {
+        return Optional.ofNullable(
+            objectMapper.convertValue(redisTemplate.opsForValue().get(ROOM_PREFIX + id), Room.class));
     }
 
 }

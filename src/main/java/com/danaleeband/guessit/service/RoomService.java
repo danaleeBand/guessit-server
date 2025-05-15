@@ -1,7 +1,8 @@
 package com.danaleeband.guessit.service;
 
 import com.danaleeband.guessit.controller.dto.RoomCreateRequestDto;
-import com.danaleeband.guessit.controller.dto.RoomPasswordRequestDto;
+import com.danaleeband.guessit.controller.dto.RoomJoinReponseDto;
+import com.danaleeband.guessit.controller.dto.RoomJoinRequestDto;
 import com.danaleeband.guessit.entity.Player;
 import com.danaleeband.guessit.entity.Room;
 import com.danaleeband.guessit.global.RoomListEvent;
@@ -15,7 +16,9 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 @RequiredArgsConstructor
@@ -86,8 +89,20 @@ public class RoomService {
             .toList();
     }
 
-    public boolean checkRoomPassword(long roomId, @Valid RoomPasswordRequestDto roomPasswordRequestDto) {
-        return roomPasswordRequestDto.getPassword()
-            .equals(roomRepository.findById(roomId).getPassword());
+    public RoomJoinReponseDto joinRoom(long roomId, @Valid RoomJoinRequestDto roomJoinRequestDto) {
+        Room room = roomRepository.findById(roomId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        
+        if (room.isLocked() && !room.getPassword().equals(roomJoinRequestDto.getPassword())) {
+            return RoomJoinReponseDto.getInvalidPasswordResponse();
+        }
+
+        if (room.isPlaying()) {
+            return RoomJoinReponseDto.getFullRoomResponse();
+        }
+
+        // 방 입장
+
+        return RoomJoinReponseDto.getValidResponse();
     }
 }

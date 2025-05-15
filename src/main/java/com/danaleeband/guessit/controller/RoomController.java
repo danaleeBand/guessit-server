@@ -2,8 +2,8 @@ package com.danaleeband.guessit.controller;
 
 import com.danaleeband.guessit.controller.dto.RoomCreateRequestDto;
 import com.danaleeband.guessit.controller.dto.RoomCreateResponseDto;
-import com.danaleeband.guessit.controller.dto.RoomPasswordReponseDto;
-import com.danaleeband.guessit.controller.dto.RoomPasswordRequestDto;
+import com.danaleeband.guessit.controller.dto.RoomJoinReponseDto;
+import com.danaleeband.guessit.controller.dto.RoomJoinRequestDto;
 import com.danaleeband.guessit.entity.Room;
 import com.danaleeband.guessit.service.RoomService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -43,12 +43,10 @@ public class RoomController {
         return ResponseEntity.ok(rooms);
     }
 
-    @PostMapping("/{roomId}/check-password")
-    @Operation(summary = "방 비밀번호 체크", description = "방 비밀번호 체크")
-    public ResponseEntity<RoomPasswordReponseDto> checkRoomPassword(@PathVariable long roomId,
-        @RequestBody @Valid RoomPasswordRequestDto roomPasswordRequestDto) {
-        RoomPasswordReponseDto response = roomService.checkRoomPassword(roomId, roomPasswordRequestDto) ?
-            RoomPasswordReponseDto.getValidResponse() : RoomPasswordReponseDto.getInvalidResponse();
-        return ResponseEntity.ok(response);
+    @PostMapping("/{roomId}/join")
+    @Operation(summary = "방 입장", description = "방 입장")
+    public ResponseEntity<RoomJoinReponseDto> joinRoom(@PathVariable long roomId,
+        @RequestBody @Valid RoomJoinRequestDto roomJoinRequestDto) {
+        return ResponseEntity.ok(roomService.joinRoom(roomId, roomJoinRequestDto));
     }
 }

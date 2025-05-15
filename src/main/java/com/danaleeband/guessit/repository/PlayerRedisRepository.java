@@ -5,6 +5,7 @@ import static com.danaleeband.guessit.global.Constants.PLAYER_PREFIX;
 
 import com.danaleeband.guessit.entity.Player;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
@@ -26,8 +27,8 @@ public class PlayerRedisRepository implements PlayerRepository {
     }
 
     @Override
-    public Player findById(Long id) {
+    public Optional<Player> findById(Long id) {
         String playerKey = PLAYER_PREFIX + id;
-        return objectMapper.convertValue(redisTemplate.opsForValue().get(playerKey), Player.class);
+        return Optional.ofNullable(objectMapper.convertValue(redisTemplate.opsForValue().get(playerKey), Player.class));
     }
 }
