@@ -88,6 +88,11 @@ public class RoomService {
             .toList();
     }
 
+    public Room getRoomById(Long id) {
+        return roomRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Room not found with id: " + id));
+    }
+
     public RoomJoinReponseDto joinRoom(long roomId, @Valid RoomJoinRequestDto roomJoinRequestDto) {
         Room room = roomRepository.findById(roomId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
@@ -106,5 +111,23 @@ public class RoomService {
         eventPublisher.publishEvent(new RoomListEvent("UPDATE"));
 
         return RoomJoinReponseDto.getValidResponse();
+    }
+
+    public void updatePlayerReady(Long roomId, Long playerId) {
+        Room room = getRoomById(roomId);
+        List<Player> players = room.getPlayers();
+
+        for (Player player : players) {
+            if (player.getId() == playerId) {
+                player.setIsReady(!Boolean.TRUE.equals(player.getIsReady()));
+                break;
+            }
+        }
+
+        updateRoom(room);
+    }
+
+    public void updateRoom(Room room) {
+        roomRepository.updatePlayer(room);
     }
 }
