@@ -35,7 +35,6 @@ public class RoomService {
 
 
     public long createRoom(RoomCreateRequestDto roomCreateRequestDTO) {
-        List<Long> quizIds = quizService.getRandomQuizzes();
         Player creator = playerService.findPlayerById(roomCreateRequestDTO.getCreatorId());
 
         Room room = new Room(
@@ -44,8 +43,7 @@ public class RoomService {
             roomCreateRequestDTO.isLocked(),
             roomCreateRequestDTO.getPassword(),
             creator,
-            List.of(creator),
-            quizIds);
+            List.of(creator));
 
         Long id = roomRepository.save(room);
         eventPublisher.publishEvent(new RoomListEvent("UPDATE"));
@@ -106,7 +104,7 @@ public class RoomService {
         room.addPlayer(player);
         roomRepository.updatePlayer(room);
         eventPublisher.publishEvent(new RoomListEvent("UPDATE"));
-        
+
         return RoomJoinReponseDto.getValidResponse();
     }
 }

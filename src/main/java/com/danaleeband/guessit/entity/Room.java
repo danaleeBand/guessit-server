@@ -21,14 +21,12 @@ public class Room implements Serializable {
     private String password;
     private Player creator;
     private List<Player> players;
-    private List<Long> quizIds;
-    private Long quizId;
 
     public Room() {
     }
 
     public Room(String code, String title, boolean locked, String password,
-        Player creator, List<Player> players, List<Long> quizIds) {
+        Player creator, List<Player> players) {
         this.code = code;
         this.title = title;
         this.playing = false;
@@ -36,8 +34,6 @@ public class Room implements Serializable {
         this.password = password;
         this.creator = creator;
         this.players = players;
-        this.quizIds = quizIds;
-        this.quizId = quizIds.get(0);
     }
 
     public void assignId(long id) {
