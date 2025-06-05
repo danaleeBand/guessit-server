@@ -88,6 +88,11 @@ public class RoomService {
             .toList();
     }
 
+    public Room getRoomById(Long id) {
+        return roomRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Room not found with id: " + id));
+    }
+
     public RoomJoinReponseDto joinRoom(long roomId, @Valid RoomJoinRequestDto roomJoinRequestDto) {
         Room room = roomRepository.findById(roomId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));

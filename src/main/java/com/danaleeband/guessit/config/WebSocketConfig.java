@@ -1,6 +1,7 @@
 package com.danaleeband.guessit.config;
 
 import com.danaleeband.guessit.websocket.RoomListWebSocketHandler;
+import com.danaleeband.guessit.websocket.RoomWebSocketHandler;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,6 +16,7 @@ import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry
 public class WebSocketConfig implements WebSocketConfigurer {
 
     private final RoomListWebSocketHandler roomListWebSocketHandler;
+    private final RoomWebSocketHandler roomWebSocketHandler;
     private static final Logger log = LoggerFactory.getLogger(WebSocketConfig.class);
 
     @Override
@@ -22,7 +24,7 @@ public class WebSocketConfig implements WebSocketConfigurer {
         log.info("Websocket handlers Registered");
         registry.addHandler(roomListWebSocketHandler, "/ws/rooms")
             .setAllowedOriginPatterns("*");
-        registry.addHandler(roomListWebSocketHandler, "/ws/room/{roomId}")
+        registry.addHandler(roomWebSocketHandler, "/ws/rooms/{roomId}")
             .setAllowedOriginPatterns("*");
     }
 }
