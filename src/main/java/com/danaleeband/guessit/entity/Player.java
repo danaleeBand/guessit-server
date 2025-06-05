@@ -13,6 +13,7 @@ public class Player implements Serializable {
     private long id;
     private String nickname;
     private String profileUrl;
+    private Boolean isReady;
 
     public Player() {
     }
@@ -20,6 +21,7 @@ public class Player implements Serializable {
     public Player(String nickname, String profileUrl) {
         this.nickname = nickname;
         this.profileUrl = profileUrl;
+        this.isReady = false;
     }
 
     public void assignId(Long id) {
