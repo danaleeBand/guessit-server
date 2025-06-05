@@ -3,6 +3,7 @@ package com.danaleeband.guessit.entity;
 import jakarta.persistence.Id;
 import java.io.Serializable;
 import lombok.Getter;
+import lombok.Setter;
 import org.springframework.data.redis.core.RedisHash;
 
 @Getter
@@ -13,6 +14,7 @@ public class Player implements Serializable {
     private long id;
     private String nickname;
     private String profileUrl;
+    @Setter
     private Boolean isReady;
 
     public Player() {
@@ -27,4 +29,5 @@ public class Player implements Serializable {
     public void assignId(Long id) {
         this.id = id;
     }
+
 }

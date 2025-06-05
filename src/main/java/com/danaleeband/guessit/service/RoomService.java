@@ -112,4 +112,22 @@ public class RoomService {
 
         return RoomJoinReponseDto.getValidResponse();
     }
+
+    public void updatePlayerReady(Long roomId, Long playerId) {
+        Room room = getRoomById(roomId);
+        List<Player> players = room.getPlayers();
+
+        for (Player player : players) {
+            if (player.getId() == playerId) {
+                player.setIsReady(!Boolean.TRUE.equals(player.getIsReady()));
+                break;
+            }
+        }
+
+        updateRoom(room);
+    }
+
+    public void updateRoom(Room room) {
+        roomRepository.updatePlayer(room);
+    }
 }

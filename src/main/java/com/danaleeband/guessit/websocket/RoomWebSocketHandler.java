@@ -1,9 +1,11 @@
 package com.danaleeband.guessit.websocket;
 
 import com.danaleeband.guessit.service.RoomService;
+import com.danaleeband.guessit.websocket.dto.PlayerReadyRequestDto;
 import com.danaleeband.guessit.websocket.dto.RoomDetailSocketDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
+import java.net.URI;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import lombok.RequiredArgsConstructor;
@@ -41,7 +43,18 @@ public class RoomWebSocketHandler extends TextWebSocketHandler {
 
     private Long extractRoomId(WebSocketSession session) {
         try {
-            String path = session.getUri().getPath();
+            URI uri = session.getUri();
+            if (uri == null) {
+                log.warn("Session URI is null");
+                return null;
+            }
+
+            String path = uri.getPath();
+            if (path == null || path.isEmpty()) {
+                log.warn("Session URI path is null or empty");
+                return null;
+            }
+
             String[] parts = path.split("/");
             return Long.parseLong(parts[parts.length - 1]);
         } catch (Exception e) {
@@ -66,5 +79,31 @@ public class RoomWebSocketHandler extends TextWebSocketHandler {
 
     private RoomDetailSocketDto toRoomSocket(long id) {
         return RoomDetailSocketDto.toRoomDetailSocketDto(roomService.getRoomById(id));
+    }
+
+    @Override
+    protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
+        PlayerReadyRequestDto request = objectMapper.readValue(message.getPayload(), PlayerReadyRequestDto.class);
+        roomService.updatePlayerReady(request.getRoomId(), request.getPlayerId());
+
+        RoomDetailSocketDto updatedRoom = toRoomSocket(request.getRoomId());
+        broadcastRoom(updatedRoom);
+    }
+
+    private void broadcastRoom(RoomDetailSocketDto room) {
+        TextMessage message;
+        try {
+            message = new TextMessage(objectMapper.writeValueAsString(room));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        for (WebSocketSession s : sessions) {
+            try {
+                s.sendMessage(message);
+            } catch (IOException e) {
+                log.error("Failed to send message to session: {}", s.getId(), e);
+            }
+        }
     }
 }
