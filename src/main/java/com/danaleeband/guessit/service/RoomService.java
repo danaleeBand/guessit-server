@@ -3,9 +3,9 @@ package com.danaleeband.guessit.service;
 import static com.danaleeband.guessit.global.Constants.ALPHABET_NUMBER;
 import static com.danaleeband.guessit.global.Constants.ROOM_CODE_LENGTH;
 
-import com.danaleeband.guessit.controller.dto.RoomCreateRequestDto;
-import com.danaleeband.guessit.controller.dto.RoomJoinReponseDto;
-import com.danaleeband.guessit.controller.dto.RoomJoinRequestDto;
+import com.danaleeband.guessit.controller.api.dto.RoomCreateRequestDto;
+import com.danaleeband.guessit.controller.api.dto.RoomJoinReponseDto;
+import com.danaleeband.guessit.controller.api.dto.RoomJoinRequestDto;
 import com.danaleeband.guessit.entity.Player;
 import com.danaleeband.guessit.entity.Room;
 import com.danaleeband.guessit.global.RoomListEvent;
@@ -120,7 +120,6 @@ public class RoomService {
         for (Player player : players) {
             if (player.getId() == playerId) {
                 player.setIsReady(!Boolean.TRUE.equals(player.getIsReady()));
-                break;
             }
         }
 

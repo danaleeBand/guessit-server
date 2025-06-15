@@ -1,4 +1,4 @@
-package com.danaleeband.guessit.controller.dto;
+package com.danaleeband.guessit.controller.api.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

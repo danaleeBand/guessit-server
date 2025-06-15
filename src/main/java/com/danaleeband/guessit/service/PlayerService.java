@@ -1,7 +1,7 @@
 package com.danaleeband.guessit.service;
 
-import com.danaleeband.guessit.controller.dto.PlayerCreateRequestDto;
-import com.danaleeband.guessit.controller.dto.PlayerCreateResponseDto;
+import com.danaleeband.guessit.controller.api.dto.PlayerCreateRequestDto;
+import com.danaleeband.guessit.controller.api.dto.PlayerCreateResponseDto;
 import com.danaleeband.guessit.entity.Player;
 import com.danaleeband.guessit.repository.PlayerRepository;
 import lombok.RequiredArgsConstructor;

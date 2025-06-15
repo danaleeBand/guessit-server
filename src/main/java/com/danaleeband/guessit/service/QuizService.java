@@ -1,7 +1,7 @@
 package com.danaleeband.guessit.service;
 
-import com.danaleeband.guessit.controller.dto.QuizCreateDto;
-import com.danaleeband.guessit.controller.dto.QuizResponseDto;
+import com.danaleeband.guessit.controller.api.dto.QuizCreateDto;
+import com.danaleeband.guessit.controller.api.dto.QuizResponseDto;
 import com.danaleeband.guessit.entity.Quiz;
 import com.danaleeband.guessit.repository.QuizRepository;
 import java.util.List;

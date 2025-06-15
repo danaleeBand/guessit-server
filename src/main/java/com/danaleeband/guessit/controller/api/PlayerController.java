@@ -1,7 +1,7 @@
-package com.danaleeband.guessit.controller;
+package com.danaleeband.guessit.controller.api;
 
-import com.danaleeband.guessit.controller.dto.PlayerCreateRequestDto;
-import com.danaleeband.guessit.controller.dto.PlayerCreateResponseDto;
+import com.danaleeband.guessit.controller.api.dto.PlayerCreateRequestDto;
+import com.danaleeband.guessit.controller.api.dto.PlayerCreateResponseDto;
 import com.danaleeband.guessit.service.PlayerService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
