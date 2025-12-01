@@ -7,6 +7,7 @@ import com.danaleeband.guessit.websocket.dto.RoomSocketDto;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
@@ -31,14 +32,18 @@ public class RoomSocketController {
     }
 
     @MessageMapping("/rooms")
-    public void sendRoomList() {
-        broadcastRoomList();
+    @SendTo("/sub/rooms")
+    public String sendRoomList(String roomId) {
+//        System.out.println("sending room list");
+//        broadcastRoomList();
+        return roomId;
     }
 
     private void broadcastRoomList() {
         List<RoomSocketDto> roomList = roomService.getAllOrderedRooms().stream()
             .map(RoomSocketDto::toRoomSocketDto)
             .toList();
+        System.out.println("????");
 
         messagingTemplate.convertAndSend("/topic/rooms", roomList);
     }

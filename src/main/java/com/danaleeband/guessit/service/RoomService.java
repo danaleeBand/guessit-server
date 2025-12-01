@@ -46,7 +46,7 @@ public class RoomService {
             List.of(creator));
 
         Long id = roomRepository.save(room);
-        eventPublisher.publishEvent(new RoomListEvent("UPDATE"));
+        eventPublisher.publishEvent(new RoomListEvent("CREATE"));
 
         return id;
     }
@@ -124,6 +124,8 @@ public class RoomService {
         }
 
         updateRoom(room);
+
+        eventPublisher.publishEvent(new RoomListEvent("UPDATE"));
     }
 
     public void updateRoom(Room room) {
