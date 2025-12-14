@@ -8,8 +8,8 @@ import com.danaleeband.guessit.controller.dto.RoomJoinReponseDto;
 import com.danaleeband.guessit.controller.dto.RoomJoinRequestDto;
 import com.danaleeband.guessit.entity.Player;
 import com.danaleeband.guessit.entity.Room;
-import com.danaleeband.guessit.global.RoomListEvent;
 import com.danaleeband.guessit.repository.RoomRepository;
+import com.danaleeband.guessit.websocket.dto.RoomSocketDto;
 import jakarta.validation.Valid;
 import java.security.SecureRandom;
 import java.util.Comparator;
@@ -20,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -32,6 +33,7 @@ public class RoomService {
     private final PlayerService playerService;
     private final RoomRepository roomRepository;
     private final ApplicationEventPublisher eventPublisher;
+    private final SimpMessagingTemplate messagingTemplate;
 
 
     public long createRoom(RoomCreateRequestDto roomCreateRequestDTO) {
@@ -46,7 +48,8 @@ public class RoomService {
             List.of(creator));
 
         Long id = roomRepository.save(room);
-        eventPublisher.publishEvent(new RoomListEvent("UPDATE"));
+
+        broadcastRoomList();
 
         return id;
     }
@@ -108,7 +111,8 @@ public class RoomService {
         Player player = playerService.findPlayerById(roomJoinRequestDto.getPlayerId());
         room.addPlayer(player);
         roomRepository.updatePlayer(room);
-        eventPublisher.publishEvent(new RoomListEvent("UPDATE"));
+
+        broadcastRoomList();
 
         return RoomJoinReponseDto.getValidResponse();
     }
@@ -125,9 +129,19 @@ public class RoomService {
         }
 
         updateRoom(room);
+
+        broadcastRoomList();
     }
 
     public void updateRoom(Room room) {
         roomRepository.updatePlayer(room);
+    }
+
+    public void broadcastRoomList() {
+        List<RoomSocketDto> roomList = getAllOrderedRooms().stream()
+            .map(RoomSocketDto::toRoomSocketDto)
+            .toList();
+
+        messagingTemplate.convertAndSend("/sub/rooms", roomList);
     }
 }
