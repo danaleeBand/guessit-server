@@ -1,9 +1,9 @@
-package com.danaleeband.guessit.controller;
+package com.danaleeband.guessit.controller.api;
 
-import com.danaleeband.guessit.controller.dto.RoomCreateRequestDto;
-import com.danaleeband.guessit.controller.dto.RoomCreateResponseDto;
-import com.danaleeband.guessit.controller.dto.RoomJoinReponseDto;
-import com.danaleeband.guessit.controller.dto.RoomJoinRequestDto;
+import com.danaleeband.guessit.controller.api.dto.RoomCreateRequestDto;
+import com.danaleeband.guessit.controller.api.dto.RoomCreateResponseDto;
+import com.danaleeband.guessit.controller.api.dto.RoomJoinReponseDto;
+import com.danaleeband.guessit.controller.api.dto.RoomJoinRequestDto;
 import com.danaleeband.guessit.entity.Room;
 import com.danaleeband.guessit.service.RoomService;
 import io.swagger.v3.oas.annotations.Operation;

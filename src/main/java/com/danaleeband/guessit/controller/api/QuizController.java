@@ -1,7 +1,7 @@
-package com.danaleeband.guessit.controller;
+package com.danaleeband.guessit.controller.api;
 
-import com.danaleeband.guessit.controller.dto.QuizCreateDto;
-import com.danaleeband.guessit.controller.dto.QuizResponseDto;
+import com.danaleeband.guessit.controller.api.dto.QuizCreateDto;
+import com.danaleeband.guessit.controller.api.dto.QuizResponseDto;
 import com.danaleeband.guessit.service.QuizService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;

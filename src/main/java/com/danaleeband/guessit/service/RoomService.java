@@ -3,12 +3,11 @@ package com.danaleeband.guessit.service;
 import static com.danaleeband.guessit.global.Constants.ALPHABET_NUMBER;
 import static com.danaleeband.guessit.global.Constants.ROOM_CODE_LENGTH;
 
-import com.danaleeband.guessit.controller.dto.RoomCreateRequestDto;
-import com.danaleeband.guessit.controller.dto.RoomJoinReponseDto;
-import com.danaleeband.guessit.controller.dto.RoomJoinRequestDto;
+import com.danaleeband.guessit.controller.api.dto.RoomCreateRequestDto;
+import com.danaleeband.guessit.controller.api.dto.RoomJoinReponseDto;
+import com.danaleeband.guessit.controller.api.dto.RoomJoinRequestDto;
 import com.danaleeband.guessit.entity.Player;
 import com.danaleeband.guessit.entity.Room;
-import com.danaleeband.guessit.global.RoomListEvent;
 import com.danaleeband.guessit.repository.RoomRepository;
 import jakarta.validation.Valid;
 import java.security.SecureRandom;
@@ -17,9 +16,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -31,7 +30,7 @@ public class RoomService {
     private final QuizService quizService;
     private final PlayerService playerService;
     private final RoomRepository roomRepository;
-    private final ApplicationEventPublisher eventPublisher;
+    private final SimpMessagingTemplate template;
 
 
     public long createRoom(RoomCreateRequestDto roomCreateRequestDTO) {
@@ -46,7 +45,7 @@ public class RoomService {
             List.of(creator));
 
         Long id = roomRepository.save(room);
-        eventPublisher.publishEvent(new RoomListEvent("UPDATE"));
+        template.convertAndSend("/sub/rooms", getAllRooms());
 
         return id;
     }
@@ -77,10 +76,6 @@ public class RoomService {
     }
 
     public List<Room> getAllRooms() {
-        return roomRepository.findAll();
-    }
-
-    public List<Room> getAllOrderedRooms() {
         return roomRepository.findAll()
             .stream()
             .sorted(Comparator.comparing(Room::isPlaying)
@@ -108,7 +103,7 @@ public class RoomService {
         Player player = playerService.findPlayerById(roomJoinRequestDto.getPlayerId());
         room.addPlayer(player);
         roomRepository.updatePlayer(room);
-        eventPublisher.publishEvent(new RoomListEvent("UPDATE"));
+        template.convertAndSend("/sub/rooms", getAllRooms());
 
         return RoomJoinReponseDto.getValidResponse();
     }
