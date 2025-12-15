@@ -6,6 +6,7 @@ import static com.danaleeband.guessit.global.Constants.ROOM_CODE_LENGTH;
 import com.danaleeband.guessit.controller.api.dto.RoomCreateRequestDto;
 import com.danaleeband.guessit.controller.api.dto.RoomJoinReponseDto;
 import com.danaleeband.guessit.controller.api.dto.RoomJoinRequestDto;
+import com.danaleeband.guessit.controller.websocket.dto.RoomSocketDto;
 import com.danaleeband.guessit.entity.Player;
 import com.danaleeband.guessit.entity.Room;
 import com.danaleeband.guessit.repository.RoomRepository;
@@ -45,7 +46,7 @@ public class RoomService {
             List.of(creator));
 
         Long id = roomRepository.save(room);
-        template.convertAndSend("/sub/rooms", getAllRooms());
+        broadcastRoomList();
 
         return id;
     }
@@ -103,7 +104,7 @@ public class RoomService {
         Player player = playerService.findPlayerById(roomJoinRequestDto.getPlayerId());
         room.addPlayer(player);
         roomRepository.updatePlayer(room);
-        template.convertAndSend("/sub/rooms", getAllRooms());
+        broadcastRoomList();
 
         return RoomJoinReponseDto.getValidResponse();
     }
@@ -125,4 +126,13 @@ public class RoomService {
     public void updateRoom(Room room) {
         roomRepository.updatePlayer(room);
     }
+
+    public void broadcastRoomList() {
+        List<RoomSocketDto> roomList = getAllRooms().stream()
+            .map(RoomSocketDto::toRoomSocketDto)
+            .toList();
+
+        template.convertAndSend("/sub/rooms", roomList);
+    }
+
 }
