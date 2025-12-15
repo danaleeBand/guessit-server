@@ -11,12 +11,12 @@ import org.springframework.stereotype.Controller;
 
 @Controller
 @RequiredArgsConstructor
-@Tag(name = "방 WebSocket")
+@Tag(name = "Room WebSocket")
 public class RoomSocketController {
 
     private final RoomService roomService;
 
-    @MessageMapping("/rooms/list")
+    @MessageMapping("/rooms")
     @SendTo("/sub/rooms")
     public List<RoomSocketDto> getRoomList() {
         return roomService.getAllOrderedRooms().stream()
