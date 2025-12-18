@@ -7,6 +7,7 @@ import com.danaleeband.guessit.player.Player;
 import com.danaleeband.guessit.player.PlayerService;
 import com.danaleeband.guessit.quiz.QuizService;
 import com.danaleeband.guessit.room.dto.RoomCreateRequestDto;
+import com.danaleeband.guessit.room.dto.RoomDetailDto;
 import com.danaleeband.guessit.room.dto.RoomDto;
 import com.danaleeband.guessit.room.dto.RoomJoinReponseDto;
 import com.danaleeband.guessit.room.dto.RoomJoinRequestDto;
@@ -47,7 +48,9 @@ public class RoomService {
             List.of(creator));
 
         Long id = roomRepository.save(room);
+        
         broadcastRoomList();
+        broadcastRoomDetail(id);
 
         return id;
     }
@@ -91,6 +94,13 @@ public class RoomService {
             .orElseThrow(() -> new RuntimeException("Room not found with id: " + id));
     }
 
+    public RoomDetailDto getRoomDetail(Long id) {
+        return RoomDetailDto.toRoomDetailDto(
+            roomRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Room not found with id: " + id))
+        );
+    }
+
     public RoomJoinReponseDto joinRoom(long roomId, @Valid RoomJoinRequestDto roomJoinRequestDto) {
         Room room = roomRepository.findById(roomId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
@@ -106,7 +116,9 @@ public class RoomService {
         Player player = playerService.findPlayerById(roomJoinRequestDto.getPlayerId());
         room.addPlayer(player);
         roomRepository.updatePlayer(room);
+
         broadcastRoomList();
+        broadcastRoomDetail(roomId);
 
         return RoomJoinReponseDto.getValidResponse();
     }
@@ -123,6 +135,8 @@ public class RoomService {
         }
 
         updateRoom(room);
+
+        broadcastRoomDetail(roomId);
     }
 
     public void updateRoom(Room room) {
@@ -133,4 +147,8 @@ public class RoomService {
         template.convertAndSend("/sub/rooms", getAllRooms());
     }
 
+    public void broadcastRoomDetail(Long roomId) {
+        RoomDetailDto detail = getRoomDetail(roomId);
+        template.convertAndSend("/sub/rooms/" + roomId, detail);
+    }
 }

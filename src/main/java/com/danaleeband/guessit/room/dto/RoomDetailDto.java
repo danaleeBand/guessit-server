@@ -1,6 +1,6 @@
 package com.danaleeband.guessit.room.dto;
 
-import com.danaleeband.guessit.player.Player;
+import com.danaleeband.guessit.player.dto.PlayerDto;
 import com.danaleeband.guessit.room.Room;
 import java.io.Serializable;
 import java.util.List;
@@ -16,18 +16,21 @@ public class RoomDetailDto implements Serializable {
     private String title;
     private boolean playing;
     private boolean locked;
-    private Player creator;
-    private List<Player> players;
+    private PlayerDto creator;
+    private List<PlayerDto> players;
 
-    public static RoomDetailDto toRoomDetailSocketDto(Room room) {
+    public static RoomDetailDto toRoomDetailDto(Room room) {
         return new RoomDetailDto(
             room.getId(),
             room.getCode(),
             room.getTitle(),
             room.isPlaying(),
             room.isLocked(),
-            room.getCreator(),
+            PlayerDto.from(room.getCreator()),
             room.getPlayers()
+                .stream()
+                .map(PlayerDto::from)
+                .toList()
         );
     }
 }
