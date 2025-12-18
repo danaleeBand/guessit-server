@@ -3,6 +3,7 @@ package com.danaleeband.guessit.room.controller;
 import com.danaleeband.guessit.room.RoomService;
 import com.danaleeband.guessit.room.dto.RoomCreateRequestDto;
 import com.danaleeband.guessit.room.dto.RoomCreateResponseDto;
+import com.danaleeband.guessit.room.dto.RoomDetailDto;
 import com.danaleeband.guessit.room.dto.RoomDto;
 import com.danaleeband.guessit.room.dto.RoomJoinReponseDto;
 import com.danaleeband.guessit.room.dto.RoomJoinRequestDto;
@@ -41,6 +42,13 @@ public class RoomController {
     public ResponseEntity<List<RoomDto>> getAllRooms() {
         List<RoomDto> rooms = roomService.getAllRooms();
         return ResponseEntity.ok(rooms);
+    }
+
+    @GetMapping("/{roomId}")
+    @Operation(summary = "방 상세 조회", description = "방 상세 조회")
+    public ResponseEntity<RoomDetailDto> getRoom(@PathVariable Long roomId) {
+        RoomDetailDto room = roomService.getRoomDetail(roomId);
+        return ResponseEntity.ok(room);
     }
 
     @PostMapping("/{roomId}/join")
