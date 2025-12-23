@@ -5,8 +5,8 @@ import com.danaleeband.guessit.room.dto.RoomCreateRequestDto;
 import com.danaleeband.guessit.room.dto.RoomCreateResponseDto;
 import com.danaleeband.guessit.room.dto.RoomDetailDto;
 import com.danaleeband.guessit.room.dto.RoomDto;
-import com.danaleeband.guessit.room.dto.RoomJoinReponseDto;
 import com.danaleeband.guessit.room.dto.RoomJoinRequestDto;
+import com.danaleeband.guessit.room.dto.RoomJoinResponseDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -53,7 +53,7 @@ public class RoomController {
 
     @PostMapping("/{roomId}/join")
     @Operation(summary = "방 입장", description = "방 입장")
-    public ResponseEntity<RoomJoinReponseDto> joinRoom(@PathVariable long roomId,
+    public ResponseEntity<RoomJoinResponseDto> joinRoom(@PathVariable long roomId,
         @RequestBody @Valid RoomJoinRequestDto roomJoinRequestDto) {
         return ResponseEntity.ok(roomService.joinRoom(roomId, roomJoinRequestDto));
     }

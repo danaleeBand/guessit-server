@@ -8,6 +8,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
+import com.danaleeband.guessit.room.dto.GameReadyRequestDto;
+import lombok.RequiredArgsConstructor;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
@@ -34,5 +38,9 @@ public class RoomSocketController {
     @MessageMapping("/rooms/leave")
     public RoomLeaveResponseDto leaveRoom(@Payload RoomLeaveRequestDto requestDto) {
         return roomService.leaveRoom(requestDto);
+
+    @MessageMapping("/rooms/ready")
+    public void ready(@Payload GameReadyRequestDto gameReadyRequestDto) {
+        roomService.updatePlayerReady(gameReadyRequestDto);
     }
 }
