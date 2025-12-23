@@ -15,4 +15,6 @@ public interface RoomRepository {
     Optional<Room> findById(Long id);
 
     void updatePlayer(Room room);
+
+    void delete(Long id);
 }
