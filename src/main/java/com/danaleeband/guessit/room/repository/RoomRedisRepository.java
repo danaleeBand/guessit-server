@@ -51,5 +51,8 @@ public class RoomRedisRepository implements RoomRepository {
         redisTemplate.opsForValue().set(ROOM_PREFIX + room.getId(), room);
     }
 
-
+    @Override
+    public void delete(Long id) {
+        redisTemplate.delete(ROOM_PREFIX + id);
+    }
 }

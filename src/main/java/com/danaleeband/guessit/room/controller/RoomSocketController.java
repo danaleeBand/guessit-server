@@ -1,7 +1,13 @@
 package com.danaleeband.guessit.room.controller;
 
 import com.danaleeband.guessit.room.RoomService;
+import com.danaleeband.guessit.room.dto.RoomLeaveRequestDto;
+import com.danaleeband.guessit.room.dto.RoomLeaveResponseDto;
+import com.danaleeband.guessit.room.dto.RoomSessionBindRequestDto;
 import lombok.RequiredArgsConstructor;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.Payload;
+import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
@@ -12,4 +18,21 @@ public class RoomSocketController {
     private final RoomService roomService;
     private final SimpMessagingTemplate template;
 
+    @MessageMapping("/rooms/join")
+    public void bindSession(
+        @Payload RoomSessionBindRequestDto dto,
+        SimpMessageHeaderAccessor accessor
+    ) {
+        var sessionAttrs = accessor.getSessionAttributes();
+        if (sessionAttrs != null) {
+            sessionAttrs.put("roomId", dto.getRoomId());
+            sessionAttrs.put("playerId", dto.getPlayerId());
+        }
+    }
+
+
+    @MessageMapping("/rooms/leave")
+    public RoomLeaveResponseDto leaveRoom(@Payload RoomLeaveRequestDto requestDto) {
+        return roomService.leaveRoom(requestDto);
+    }
 }

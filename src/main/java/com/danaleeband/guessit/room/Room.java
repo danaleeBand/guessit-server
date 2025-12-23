@@ -3,6 +3,7 @@ package com.danaleeband.guessit.room;
 import static com.danaleeband.guessit.global.Constants.PLAYER_LIMIT;
 
 import com.danaleeband.guessit.player.Player;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Id;
 import java.io.Serializable;
 import java.util.List;
@@ -47,5 +48,32 @@ public class Room implements Serializable {
         if (players.size() == PLAYER_LIMIT) {
             this.playing = true;
         }
+    }
+
+    public void removePlayer(Player player) {
+        this.players.remove(player);
+    }
+
+    private void changeCreatorIfNeeded(Player leavingPlayer) {
+        if (this.creator == null || !this.creator.equals(leavingPlayer)) {
+            return;
+        }
+
+        if (this.players.isEmpty()) {
+            this.creator = null;
+            return;
+        }
+
+        this.creator = this.players.get(0);
+    }
+
+    public void leave(Player player) {
+        removePlayer(player);
+        changeCreatorIfNeeded(player);
+    }
+
+    @JsonIgnore
+    public boolean isEmpty() {
+        return this.players.isEmpty();
     }
 }

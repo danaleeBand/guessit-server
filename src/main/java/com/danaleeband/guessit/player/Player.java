@@ -30,4 +30,20 @@ public class Player implements Serializable {
         this.id = id;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof Player)) {
+            return false;
+        }
+        Player player = (Player) o;
+        return this.id == player.id;
+    }
+
+    @Override
+    public int hashCode() {
+        return Long.hashCode(id);
+    }
 }

@@ -11,6 +11,8 @@ import com.danaleeband.guessit.room.dto.RoomDetailDto;
 import com.danaleeband.guessit.room.dto.RoomDto;
 import com.danaleeband.guessit.room.dto.RoomJoinReponseDto;
 import com.danaleeband.guessit.room.dto.RoomJoinRequestDto;
+import com.danaleeband.guessit.room.dto.RoomLeaveRequestDto;
+import com.danaleeband.guessit.room.dto.RoomLeaveResponseDto;
 import com.danaleeband.guessit.room.repository.RoomRepository;
 import jakarta.validation.Valid;
 import java.security.SecureRandom;
@@ -48,7 +50,7 @@ public class RoomService {
             List.of(creator));
 
         Long id = roomRepository.save(room);
-        
+
         broadcastRoomList();
         broadcastRoomDetail(id);
 
@@ -122,6 +124,34 @@ public class RoomService {
 
         return RoomJoinReponseDto.getValidResponse();
     }
+
+    public RoomLeaveResponseDto leaveRoom(RoomLeaveRequestDto requestDto) {
+        Long roomId = requestDto.getRoomId();
+        Room room = roomRepository.findById(roomId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "방을 찾을 수 없습니다."));
+
+        Player player = playerService.findPlayerById(requestDto.getPlayerId());
+
+        if (!room.getPlayers().contains(player)) {
+            return RoomLeaveResponseDto.fail("해당 방에 참가하지 않은 플레이어입니다.");
+        }
+
+        room.leave(player);
+
+        if (room.isEmpty()) {
+            roomRepository.delete(roomId);
+        } else {
+            roomRepository.updatePlayer(room);
+        }
+
+        broadcastRoomList();
+        if (!room.isEmpty()) {
+            broadcastRoomDetail(roomId);
+        }
+
+        return RoomLeaveResponseDto.success();
+    }
+
 
     public void updatePlayerReady(Long roomId, Long playerId) {
         Room room = getRoomById(roomId);
