@@ -19,7 +19,7 @@ public class PlayerDto implements Serializable {
             player.getId(),
             player.getNickname(),
             player.getProfileUrl(),
-            Boolean.TRUE.equals(player.getIsReady())
+            Boolean.TRUE.equals(player.isReady())
         );
     }
 }

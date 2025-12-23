@@ -6,6 +6,7 @@ import static com.danaleeband.guessit.global.Constants.ROOM_CODE_LENGTH;
 import com.danaleeband.guessit.player.Player;
 import com.danaleeband.guessit.player.PlayerService;
 import com.danaleeband.guessit.quiz.QuizService;
+import com.danaleeband.guessit.room.dto.GameReadyRequestDto;
 import com.danaleeband.guessit.room.dto.RoomCreateRequestDto;
 import com.danaleeband.guessit.room.dto.RoomDetailDto;
 import com.danaleeband.guessit.room.dto.RoomDto;
@@ -135,20 +136,16 @@ public class RoomService {
             .contains(playerId);
     }
 
-    public void updatePlayerReady(Long roomId, Long playerId) {
-        Room room = getRoomById(roomId);
-        List<Player> players = room.getPlayers();
-
-        for (Player player : players) {
-            if (player.getId() == playerId) {
-                player.setIsReady(!Boolean.TRUE.equals(player.getIsReady()));
-                break;
-            }
-        }
-
+    public void updatePlayerReady(GameReadyRequestDto gameReadyRequestDto) {
+        Room room = getRoomById(gameReadyRequestDto.getRoomId());
+        Player player = room.getPlayers()
+            .stream()
+            .filter(p -> p.getId() == gameReadyRequestDto.getPlayerId())
+            .findAny()
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        player.setReady(gameReadyRequestDto.isReady());
         updateRoom(room);
-
-        broadcastRoomDetail(roomId);
+        broadcastRoomDetail(gameReadyRequestDto.getRoomId());
     }
 
     public void updateRoom(Room room) {
