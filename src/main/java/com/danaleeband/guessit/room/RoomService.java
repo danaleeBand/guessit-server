@@ -11,9 +11,9 @@ import com.danaleeband.guessit.room.dto.RoomCreateRequestDto;
 import com.danaleeband.guessit.room.dto.RoomDetailDto;
 import com.danaleeband.guessit.room.dto.RoomDto;
 import com.danaleeband.guessit.room.dto.RoomJoinRequestDto;
+import com.danaleeband.guessit.room.dto.RoomJoinResponseDto;
 import com.danaleeband.guessit.room.dto.RoomLeaveRequestDto;
 import com.danaleeband.guessit.room.dto.RoomLeaveResponseDto;
-import com.danaleeband.guessit.room.dto.RoomJoinResponseDto;
 import com.danaleeband.guessit.room.repository.RoomRepository;
 import jakarta.validation.Valid;
 import java.security.SecureRandom;
@@ -164,10 +164,11 @@ public class RoomService {
 
         for (Player player : players) {
             if (player.getId() == playerId) {
-                player.setIsReady(!Boolean.TRUE.equals(player.getIsReady()));
+                player.setReady(!Boolean.TRUE.equals(player.isReady()));
                 break;
             }
         }
+    }
 
     private static boolean isDuplicated(Room room, long playerId) {
         return room.getPlayers()
