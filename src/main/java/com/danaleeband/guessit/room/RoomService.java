@@ -6,11 +6,12 @@ import static com.danaleeband.guessit.global.Constants.ROOM_CODE_LENGTH;
 import com.danaleeband.guessit.player.Player;
 import com.danaleeband.guessit.player.PlayerService;
 import com.danaleeband.guessit.quiz.QuizService;
+import com.danaleeband.guessit.room.dto.GameReadyRequestDto;
 import com.danaleeband.guessit.room.dto.RoomCreateRequestDto;
 import com.danaleeband.guessit.room.dto.RoomDetailDto;
 import com.danaleeband.guessit.room.dto.RoomDto;
-import com.danaleeband.guessit.room.dto.RoomJoinReponseDto;
 import com.danaleeband.guessit.room.dto.RoomJoinRequestDto;
+import com.danaleeband.guessit.room.dto.RoomJoinResponseDto;
 import com.danaleeband.guessit.room.repository.RoomRepository;
 import jakarta.validation.Valid;
 import java.security.SecureRandom;
@@ -48,7 +49,7 @@ public class RoomService {
             List.of(creator));
 
         Long id = roomRepository.save(room);
-        
+
         broadcastRoomList();
         broadcastRoomDetail(id);
 
@@ -101,16 +102,20 @@ public class RoomService {
         );
     }
 
-    public RoomJoinReponseDto joinRoom(long roomId, @Valid RoomJoinRequestDto roomJoinRequestDto) {
+    public RoomJoinResponseDto joinRoom(long roomId, @Valid RoomJoinRequestDto roomJoinRequestDto) {
         Room room = roomRepository.findById(roomId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
         if (room.isLocked() && !room.getPassword().equals(roomJoinRequestDto.getPassword())) {
-            return RoomJoinReponseDto.getInvalidPasswordResponse();
+            return RoomJoinResponseDto.getInvalidPasswordResponse();
         }
 
         if (room.isPlaying()) {
-            return RoomJoinReponseDto.getFullRoomResponse();
+            return RoomJoinResponseDto.getFullRoomResponse();
+        }
+
+        if (isDuplicated(room, roomJoinRequestDto.getPlayerId())) {
+            return RoomJoinResponseDto.getPlayerDuplicatedResponse();
         }
 
         Player player = playerService.findPlayerById(roomJoinRequestDto.getPlayerId());
@@ -120,23 +125,27 @@ public class RoomService {
         broadcastRoomList();
         broadcastRoomDetail(roomId);
 
-        return RoomJoinReponseDto.getValidResponse();
+        return RoomJoinResponseDto.getValidResponse();
     }
 
-    public void updatePlayerReady(Long roomId, Long playerId) {
-        Room room = getRoomById(roomId);
-        List<Player> players = room.getPlayers();
+    private static boolean isDuplicated(Room room, long playerId) {
+        return room.getPlayers()
+            .stream()
+            .map(Player::getId)
+            .toList()
+            .contains(playerId);
+    }
 
-        for (Player player : players) {
-            if (player.getId() == playerId) {
-                player.setIsReady(!Boolean.TRUE.equals(player.getIsReady()));
-                break;
-            }
-        }
-
+    public void updatePlayerReady(GameReadyRequestDto gameReadyRequestDto) {
+        Room room = getRoomById(gameReadyRequestDto.getRoomId());
+        Player player = room.getPlayers()
+            .stream()
+            .filter(p -> p.getId() == gameReadyRequestDto.getPlayerId())
+            .findAny()
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        player.setReady(gameReadyRequestDto.isReady());
         updateRoom(room);
-
-        broadcastRoomDetail(roomId);
+        broadcastRoomDetail(gameReadyRequestDto.getRoomId());
     }
 
     public void updateRoom(Room room) {
