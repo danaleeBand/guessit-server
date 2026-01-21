@@ -215,7 +215,6 @@ public class RoomService {
         }
 
         Game game = gameService.createNewGame();
-        publishGameState(roomId, game.getGameState());
         room.setGame(game);
         room.setPlaying(true);
         roomRepository.update(room);
@@ -228,10 +227,7 @@ public class RoomService {
     }
 
     private void countdown(Room room) throws InterruptedException {
-        Game game = room.getGame();
-        game.changeState(GameState.COUNTDOWN);
-        roomRepository.update(room);
-        publishGameState(room.getId(), game.getGameState());
+        changeGameState(room, GameState.COUNTDOWN);
 
         for (int i = 3; i >= 0; i--) {
             template.convertAndSend("/sub/rooms/" + room.getId() + "/countdown", i);
@@ -242,10 +238,8 @@ public class RoomService {
     }
 
     private void onCountdownFinished(Room room) {
+        changeGameState(room, GameState.HINT);
         Game game = room.getGame();
-        game.changeState(GameState.IN_PROGRESS);
-        roomRepository.update(room);
-        publishGameState(room.getId(), game.getGameState());
         publishFirstHint(room.getId(), game);
     }
 
@@ -253,5 +247,11 @@ public class RoomService {
         game.getQuizList().get(0).getHint1();
         String hint = "첫번째 힌트";
         template.convertAndSend("/sub/rooms/" + roomId + "/hint", hint);
+    }
+
+    private void changeGameState(Room room, GameState gameState) {
+        room.getGame().changeState(gameState);
+        roomRepository.update(room);
+        publishGameState(room.getId(), gameState);
     }
 }
