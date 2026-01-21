@@ -6,6 +6,7 @@ import com.danaleeband.guessit.room.dto.RoomLeaveRequestDto;
 import com.danaleeband.guessit.room.dto.RoomLeaveResponseDto;
 import com.danaleeband.guessit.room.dto.RoomSessionBindRequestDto;
 import lombok.RequiredArgsConstructor;
+import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
@@ -31,7 +32,6 @@ public class RoomSocketController {
         }
     }
 
-
     @MessageMapping("/rooms/leave")
     public RoomLeaveResponseDto leaveRoom(@Payload RoomLeaveRequestDto requestDto) {
         return roomService.leaveRoom(requestDto);
@@ -40,5 +40,10 @@ public class RoomSocketController {
     @MessageMapping("/rooms/ready")
     public void ready(@Payload GameReadyRequestDto gameReadyRequestDto) {
         roomService.updatePlayerReady(gameReadyRequestDto);
+    }
+
+    @MessageMapping("/rooms/{roomId}/start")
+    public void startGame(@DestinationVariable long roomId) throws InterruptedException {
+        roomService.startGame(roomId);
     }
 }

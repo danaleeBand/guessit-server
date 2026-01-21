@@ -1,6 +1,5 @@
 package com.danaleeband.guessit.quiz.dto;
 
-import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -16,6 +15,6 @@ public class QuizResponseDto {
     private String hint4;
     private String hint5;
     private String hint6;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    private String createdAt;
+    private String updatedAt;
 }

@@ -2,7 +2,11 @@ package com.danaleeband.guessit.room;
 
 import static com.danaleeband.guessit.global.Constants.ALPHABET_NUMBER;
 import static com.danaleeband.guessit.global.Constants.ROOM_CODE_LENGTH;
+import static java.lang.Thread.sleep;
 
+import com.danaleeband.guessit.game.Game;
+import com.danaleeband.guessit.game.GameService;
+import com.danaleeband.guessit.global.GameState;
 import com.danaleeband.guessit.player.Player;
 import com.danaleeband.guessit.player.PlayerService;
 import com.danaleeband.guessit.quiz.QuizService;
@@ -37,6 +41,7 @@ public class RoomService {
     private final PlayerService playerService;
     private final RoomRepository roomRepository;
     private final SimpMessagingTemplate template;
+    private final GameService gameService;
 
 
     public long createRoom(RoomCreateRequestDto roomCreateRequestDTO) {
@@ -122,7 +127,7 @@ public class RoomService {
 
         Player player = playerService.findPlayerById(roomJoinRequestDto.getPlayerId());
         room.addPlayer(player);
-        roomRepository.updatePlayer(room);
+        roomRepository.update(room);
 
         broadcastRoomList();
         broadcastRoomDetail(roomId);
@@ -146,7 +151,7 @@ public class RoomService {
         if (room.isEmpty()) {
             roomRepository.delete(roomId);
         } else {
-            roomRepository.updatePlayer(room);
+            roomRepository.update(room);
         }
 
         broadcastRoomList();
@@ -191,7 +196,7 @@ public class RoomService {
     }
 
     public void updateRoom(Room room) {
-        roomRepository.updatePlayer(room);
+        roomRepository.update(room);
     }
 
     public void broadcastRoomList() {
@@ -201,5 +206,52 @@ public class RoomService {
     public void broadcastRoomDetail(Long roomId) {
         RoomDetailDto detail = getRoomDetail(roomId);
         template.convertAndSend("/sub/rooms/" + roomId, detail);
+    }
+
+    public void startGame(long roomId) throws InterruptedException {
+        Room room = getRoomById(roomId);
+        if (room.getGame() != null) {
+            return;
+        }
+
+        Game game = gameService.createNewGame();
+        publishGameState(roomId, game.getGameState());
+        room.setGame(game);
+        room.setPlaying(true);
+        roomRepository.update(room);
+        broadcastRoomList();
+        countdown(room);
+    }
+
+    private void publishGameState(long roomId, GameState gameState) {
+        template.convertAndSend("/sub/rooms/" + roomId + "/game-state", gameState.name());
+    }
+
+    private void countdown(Room room) throws InterruptedException {
+        Game game = room.getGame();
+        game.changeState(GameState.COUNTDOWN);
+        roomRepository.update(room);
+        publishGameState(room.getId(), game.getGameState());
+
+        for (int i = 3; i >= 0; i--) {
+            template.convertAndSend("/sub/rooms/" + room.getId() + "/countdown", i);
+            sleep(1000);
+        }
+
+        onCountdownFinished(room);
+    }
+
+    private void onCountdownFinished(Room room) {
+        Game game = room.getGame();
+        game.changeState(GameState.IN_PROGRESS);
+        roomRepository.update(room);
+        publishGameState(room.getId(), game.getGameState());
+        publishFirstHint(room.getId(), game);
+    }
+
+    private void publishFirstHint(long roomId, Game game) {
+        game.getQuizList().get(0).getHint1();
+        String hint = "첫번째 힌트";
+        template.convertAndSend("/sub/rooms/" + roomId + "/hint", hint);
     }
 }

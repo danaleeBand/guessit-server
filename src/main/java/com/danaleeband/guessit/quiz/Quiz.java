@@ -48,20 +48,20 @@ public class Quiz {
     private String hint6;
 
     @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt;
+    private String createdAt;
 
     @Column(name = "updated_at", nullable = false)
-    private LocalDateTime updatedAt;
+    private String updatedAt;
 
     @PrePersist
     public void prePersist() {
         LocalDateTime now = LocalDateTime.now();
-        this.createdAt = now;
-        this.updatedAt = now;
+        this.createdAt = now.toString();
+        this.updatedAt = now.toString();
     }
 
     @PreUpdate
     public void preUpdate() {
-        this.updatedAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now().toString();
     }
 }

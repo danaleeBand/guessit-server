@@ -49,8 +49,7 @@ public class QuizService {
         quizRepository.save(quiz);
     }
 
-    public List<Long> getRandomQuizzes() {
-        List<Quiz> quizzes = quizRepository.findTop10ByOrderByRandom();
-        return quizzes.stream().map(Quiz::getId).toList();
+    public List<Quiz> getRandomQuizzes() {
+        return quizRepository.findTop10ByOrderByRandom();
     }
 }

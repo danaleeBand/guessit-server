@@ -2,12 +2,14 @@ package com.danaleeband.guessit.room;
 
 import static com.danaleeband.guessit.global.Constants.PLAYER_LIMIT;
 
+import com.danaleeband.guessit.game.Game;
 import com.danaleeband.guessit.player.Player;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Id;
 import java.io.Serializable;
 import java.util.List;
 import lombok.Getter;
+import lombok.Setter;
 import org.springframework.data.redis.core.RedisHash;
 
 @Getter
@@ -18,11 +20,14 @@ public class Room implements Serializable {
     private long id;
     private String code;
     private String title;
+    @Setter
     private boolean playing;
     private boolean locked;
     private String password;
     private Player creator;
     private List<Player> players;
+    @Setter
+    private Game game;
 
     public Room() {
     }
