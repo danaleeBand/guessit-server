@@ -2,14 +2,12 @@ package com.danaleeband.guessit.room;
 
 import static com.danaleeband.guessit.global.Constants.ALPHABET_NUMBER;
 import static com.danaleeband.guessit.global.Constants.ROOM_CODE_LENGTH;
-import static java.lang.Thread.sleep;
 
 import com.danaleeband.guessit.game.Game;
 import com.danaleeband.guessit.game.GameService;
 import com.danaleeband.guessit.global.GameState;
 import com.danaleeband.guessit.player.Player;
 import com.danaleeband.guessit.player.PlayerService;
-import com.danaleeband.guessit.quiz.QuizService;
 import com.danaleeband.guessit.room.dto.GameReadyRequestDto;
 import com.danaleeband.guessit.room.dto.RoomCreateRequestDto;
 import com.danaleeband.guessit.room.dto.RoomDetailDto;
@@ -21,14 +19,15 @@ import com.danaleeband.guessit.room.dto.RoomLeaveResponseDto;
 import com.danaleeband.guessit.room.repository.RoomRepository;
 import jakarta.validation.Valid;
 import java.security.SecureRandom;
+import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -36,12 +35,11 @@ import org.springframework.web.server.ResponseStatusException;
 @RequiredArgsConstructor
 public class RoomService {
 
-    private final RedisTemplate<String, Object> redisTemplate;
-    private final QuizService quizService;
     private final PlayerService playerService;
     private final RoomRepository roomRepository;
     private final SimpMessagingTemplate template;
     private final GameService gameService;
+    private final TaskScheduler taskScheduler;
 
 
     public long createRoom(RoomCreateRequestDto roomCreateRequestDTO) {
@@ -208,7 +206,7 @@ public class RoomService {
         template.convertAndSend("/sub/rooms/" + roomId, detail);
     }
 
-    public void startGame(long roomId) throws InterruptedException {
+    public void startGame(long roomId) {
         Room room = getRoomById(roomId);
         if (room.getGame() != null) {
             return;
@@ -219,25 +217,29 @@ public class RoomService {
         room.setPlaying(true);
         roomRepository.update(room);
         broadcastRoomList();
-        countdown(room);
-    }
 
-    private void publishGameState(long roomId, GameState gameState) {
-        template.convertAndSend("/sub/rooms/" + roomId + "/game-state", gameState.name());
-    }
-
-    private void countdown(Room room) throws InterruptedException {
         changeGameState(room, GameState.COUNTDOWN);
+        scheduleGameStartCountDown(roomId, 3);
+    }
 
-        for (int i = 3; i >= 0; i--) {
-            template.convertAndSend("/sub/rooms/" + room.getId() + "/countdown", i);
-            sleep(1000);
+    public void scheduleGameStartCountDown(long roomId, int seconds) {
+        for (int i = seconds; i >= 0; i--) {
+            int count = i;
+
+            taskScheduler.schedule(
+                () -> template.convertAndSend("/sub/rooms/" + roomId + "/countdown", count),
+                Instant.now().plusSeconds(seconds - i)
+            );
         }
 
-        onCountdownFinished(room);
+        taskScheduler.schedule(
+            () -> onCountdownFinished(roomId),
+            Instant.now().plusSeconds(seconds + 1)
+        );
     }
 
-    private void onCountdownFinished(Room room) {
+    public void onCountdownFinished(long roomId) {
+        Room room = getRoomById(roomId);
         changeGameState(room, GameState.HINT);
         Game game = room.getGame();
         publishFirstHint(room.getId(), game);
@@ -253,5 +255,9 @@ public class RoomService {
         room.getGame().changeState(gameState);
         roomRepository.update(room);
         publishGameState(room.getId(), gameState);
+    }
+
+    private void publishGameState(long roomId, GameState gameState) {
+        template.convertAndSend("/sub/rooms/" + roomId + "/game-state", gameState.name());
     }
 }
