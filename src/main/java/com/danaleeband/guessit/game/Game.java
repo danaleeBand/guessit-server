@@ -13,8 +13,21 @@ public class Game implements Serializable {
 
     private List<Quiz> quizList;
     private GameState gameState;
+    private int currentQuizIndex = 0;
 
     public Game() {
+    }
+
+    public Quiz currentQuiz() {
+        return quizList.get(currentQuizIndex);
+    }
+
+    public boolean hasNextQuiz() {
+        return currentQuizIndex + 1 < quizList.size();
+    }
+
+    public void moveToNextQuiz() {
+        currentQuizIndex++;
     }
 
     public Game(List<Quiz> quizList) {

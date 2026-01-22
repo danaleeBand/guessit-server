@@ -8,6 +8,8 @@ import com.danaleeband.guessit.game.GameService;
 import com.danaleeband.guessit.global.GameState;
 import com.danaleeband.guessit.player.Player;
 import com.danaleeband.guessit.player.PlayerService;
+import com.danaleeband.guessit.quiz.Quiz;
+import com.danaleeband.guessit.quiz.dto.HintResponseDto;
 import com.danaleeband.guessit.room.dto.GameReadyRequestDto;
 import com.danaleeband.guessit.room.dto.RoomCreateRequestDto;
 import com.danaleeband.guessit.room.dto.RoomDetailDto;
@@ -234,7 +236,7 @@ public class RoomService {
 
         taskScheduler.schedule(
             () -> onCountdownFinished(roomId),
-            Instant.now().plusSeconds(seconds + 1)
+            Instant.now().plusSeconds((long) seconds + 1)
         );
     }
 
@@ -242,13 +244,35 @@ public class RoomService {
         Room room = getRoomById(roomId);
         changeGameState(room, GameState.HINT);
         Game game = room.getGame();
-        publishFirstHint(room.getId(), game);
+        publishCurrentQuiz(room.getId(), game);
     }
 
-    private void publishFirstHint(long roomId, Game game) {
-        game.getQuizList().get(0).getHint1();
-        String hint = "첫번째 힌트";
-        template.convertAndSend("/sub/rooms/" + roomId + "/hint", hint);
+    private void publishCurrentQuiz(long roomId, Game game) {
+        Quiz quiz = game.currentQuiz();
+        scheduleHints(roomId, quiz);
+    }
+
+    private void scheduleHints(long roomId, Quiz quiz) {
+        int intervalSeconds = 5;
+        List<String> hints = quiz.getHints();
+        for (int i = 0; i < hints.size(); i++) {
+            String hint = hints.get(i);
+            HintResponseDto hintResponseDto = new HintResponseDto(i + 1, quiz.getId(), hint, quiz.getAnswer().length());
+            taskScheduler.schedule(
+                () -> template.convertAndSend("/sub/rooms/" + roomId + "/hint", hintResponseDto),
+                Instant.now().plusSeconds((long) intervalSeconds * i)
+            );
+        }
+
+        taskScheduler.schedule(
+            () -> onAllHintsFinished(roomId),
+            Instant.now().plusSeconds((long) intervalSeconds * hints.size())
+        );
+    }
+
+    private void onAllHintsFinished(long roomId) {
+        Room room = getRoomById(roomId);
+        changeGameState(room, GameState.SCORING);
     }
 
     private void changeGameState(Room room, GameState gameState) {
