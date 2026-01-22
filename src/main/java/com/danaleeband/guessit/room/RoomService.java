@@ -219,6 +219,7 @@ public class RoomService {
         room.setPlaying(true);
         roomRepository.update(room);
         broadcastRoomList();
+        broadcastRoomDetail(roomId);
 
         changeGameState(room, GameState.COUNTDOWN);
         scheduleGameStartCountDown(roomId, 3);
