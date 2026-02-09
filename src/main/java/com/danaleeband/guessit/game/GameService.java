@@ -45,7 +45,7 @@ public class GameService {
             int count = i;
 
             taskScheduler.schedule(
-                () -> template.convertAndSend("/sub/rooms/" + roomId + "game/countdown", count),
+                () -> template.convertAndSend("/sub/rooms/" + roomId + "/game/countdown", count),
                 Instant.now().plusSeconds(seconds - i)
             );
         }
@@ -75,7 +75,7 @@ public class GameService {
             String hint = hints.get(i);
             HintResponseDto hintResponseDto = new HintResponseDto(i + 1, quiz.getId(), hint, quiz.getAnswer().length());
             taskScheduler.schedule(
-                () -> template.convertAndSend("/sub/rooms/" + roomId + "game/hint", hintResponseDto),
+                () -> template.convertAndSend("/sub/rooms/" + roomId + "/game/hint", hintResponseDto),
                 Instant.now().plusSeconds((long) intervalSeconds * i)
             );
         }

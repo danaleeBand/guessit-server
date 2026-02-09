@@ -3,17 +3,19 @@ package com.danaleeband.guessit.game;
 import java.io.Serializable;
 import java.time.Instant;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.springframework.data.redis.core.RedisHash;
 
 @Getter
 @RedisHash("answerSubmission")
+@NoArgsConstructor
 public class AnswerSubmission implements Serializable {
 
-    private final long playerId;
-    private final long quizId;
-    private final String answer;
-    private final Instant submittedAt;
-    private final boolean correct;
+    private long playerId;
+    private long quizId;
+    private String answer;
+    private String submittedAt;
+    private boolean correct;
 
     public AnswerSubmission(
         long playerId,
@@ -25,6 +27,6 @@ public class AnswerSubmission implements Serializable {
         this.quizId = quizId;
         this.answer = answer;
         this.correct = correct;
-        this.submittedAt = Instant.now();
+        this.submittedAt = Instant.now().toString();
     }
 }
