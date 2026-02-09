@@ -4,12 +4,8 @@ import static com.danaleeband.guessit.global.Constants.ALPHABET_NUMBER;
 import static com.danaleeband.guessit.global.Constants.ROOM_CODE_LENGTH;
 
 import com.danaleeband.guessit.game.Game;
-import com.danaleeband.guessit.game.GameService;
-import com.danaleeband.guessit.global.GameState;
 import com.danaleeband.guessit.player.Player;
 import com.danaleeband.guessit.player.PlayerService;
-import com.danaleeband.guessit.quiz.Quiz;
-import com.danaleeband.guessit.quiz.dto.HintResponseDto;
 import com.danaleeband.guessit.room.dto.GameReadyRequestDto;
 import com.danaleeband.guessit.room.dto.RoomCreateRequestDto;
 import com.danaleeband.guessit.room.dto.RoomDetailDto;
@@ -21,7 +17,6 @@ import com.danaleeband.guessit.room.dto.RoomLeaveResponseDto;
 import com.danaleeband.guessit.room.repository.RoomRepository;
 import jakarta.validation.Valid;
 import java.security.SecureRandom;
-import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
@@ -29,7 +24,6 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -40,8 +34,6 @@ public class RoomService {
     private final PlayerService playerService;
     private final RoomRepository roomRepository;
     private final SimpMessagingTemplate template;
-    private final GameService gameService;
-    private final TaskScheduler taskScheduler;
 
 
     public long createRoom(RoomCreateRequestDto roomCreateRequestDTO) {
@@ -61,6 +53,21 @@ public class RoomService {
         broadcastRoomDetail(id);
 
         return id;
+    }
+
+    public Room updateRoomStart(long roomId, Game game) {
+        Room room = getRoomById(roomId);
+        if (room.getGame() != null) {
+            return room;
+        }
+
+        room.setGame(game);
+        room.setPlaying(true);
+        roomRepository.update(room);
+        broadcastRoomList();
+        broadcastRoomDetail(roomId);
+
+        return room;
     }
 
     private String generateUniqueRoomCode() {
@@ -206,83 +213,5 @@ public class RoomService {
     public void broadcastRoomDetail(Long roomId) {
         RoomDetailDto detail = getRoomDetail(roomId);
         template.convertAndSend("/sub/rooms/" + roomId, detail);
-    }
-
-    public void startGame(long roomId) {
-        Room room = getRoomById(roomId);
-        if (room.getGame() != null) {
-            return;
-        }
-
-        Game game = gameService.createNewGame();
-        room.setGame(game);
-        room.setPlaying(true);
-        roomRepository.update(room);
-        broadcastRoomList();
-        broadcastRoomDetail(roomId);
-
-        changeGameState(room, GameState.COUNTDOWN);
-        scheduleGameStartCountDown(roomId, 3);
-    }
-
-    public void scheduleGameStartCountDown(long roomId, int seconds) {
-        for (int i = seconds; i >= 0; i--) {
-            int count = i;
-
-            taskScheduler.schedule(
-                () -> template.convertAndSend("/sub/rooms/" + roomId + "/countdown", count),
-                Instant.now().plusSeconds(seconds - i)
-            );
-        }
-
-        taskScheduler.schedule(
-            () -> onCountdownFinished(roomId),
-            Instant.now().plusSeconds((long) seconds + 1)
-        );
-    }
-
-    public void onCountdownFinished(long roomId) {
-        Room room = getRoomById(roomId);
-        changeGameState(room, GameState.HINT);
-        Game game = room.getGame();
-        publishCurrentQuiz(room.getId(), game);
-    }
-
-    private void publishCurrentQuiz(long roomId, Game game) {
-        Quiz quiz = game.currentQuiz();
-        scheduleHints(roomId, quiz);
-    }
-
-    private void scheduleHints(long roomId, Quiz quiz) {
-        int intervalSeconds = 5;
-        List<String> hints = quiz.getHints();
-        for (int i = 0; i < hints.size(); i++) {
-            String hint = hints.get(i);
-            HintResponseDto hintResponseDto = new HintResponseDto(i + 1, quiz.getId(), hint, quiz.getAnswer().length());
-            taskScheduler.schedule(
-                () -> template.convertAndSend("/sub/rooms/" + roomId + "/hint", hintResponseDto),
-                Instant.now().plusSeconds((long) intervalSeconds * i)
-            );
-        }
-
-        taskScheduler.schedule(
-            () -> onAllHintsFinished(roomId),
-            Instant.now().plusSeconds((long) intervalSeconds * hints.size())
-        );
-    }
-
-    private void onAllHintsFinished(long roomId) {
-        Room room = getRoomById(roomId);
-        changeGameState(room, GameState.SCORING);
-    }
-
-    private void changeGameState(Room room, GameState gameState) {
-        room.getGame().changeState(gameState);
-        roomRepository.update(room);
-        publishGameState(room.getId(), gameState);
-    }
-
-    private void publishGameState(long roomId, GameState gameState) {
-        template.convertAndSend("/sub/rooms/" + roomId + "/game-state", gameState.name());
     }
 }
