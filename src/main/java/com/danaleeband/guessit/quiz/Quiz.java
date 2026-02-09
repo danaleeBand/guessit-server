@@ -78,4 +78,11 @@ public class Quiz {
     public void preUpdate() {
         this.updatedAt = LocalDateTime.now().toString();
     }
+
+    public boolean isCorrect(String submittedAnswer) {
+        if (submittedAnswer == null) {
+            return false;
+        }
+        return answer.equalsIgnoreCase(submittedAnswer.trim());
+    }
 }

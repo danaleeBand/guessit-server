@@ -1,5 +1,7 @@
 package com.danaleeband.guessit.game;
 
+import com.danaleeband.guessit.game.dto.SubmitAnswerRequestDto;
+import com.danaleeband.guessit.game.dto.SubmitAnswerResponseDto;
 import com.danaleeband.guessit.global.GameState;
 import com.danaleeband.guessit.quiz.Quiz;
 import com.danaleeband.guessit.quiz.QuizService;
@@ -7,6 +9,8 @@ import com.danaleeband.guessit.quiz.dto.HintResponseDto;
 import com.danaleeband.guessit.room.Room;
 import com.danaleeband.guessit.room.RoomService;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -95,5 +99,49 @@ public class GameService {
 
     private void publishGameState(long roomId, GameState gameState) {
         template.convertAndSend("/sub/rooms/" + roomId + "/game/state", gameState.name());
+    }
+
+    public void submitAnswer(long roomId, SubmitAnswerRequestDto request) {
+        Room room = roomService.getRoomById(roomId);
+        Game game = room.getGame();
+
+        Quiz currentQuiz = game.currentQuiz();
+        if (currentQuiz.getId() != request.getQuizId()) {
+            return;
+        }
+
+        boolean isCorrect = currentQuiz.isCorrect(request.getAnswer());
+
+        AnswerSubmission submission = new AnswerSubmission(
+            request.getPlayerId(),
+            request.getQuizId(),
+            request.getAnswer(),
+            isCorrect
+        );
+
+        game.submitAnswer(submission);
+
+        List<AnswerSubmission> sorted =
+            game.getSubmissionsForCurrentQuiz(request.getQuizId()).stream()
+                .sorted(Comparator.comparing(AnswerSubmission::getSubmittedAt))
+                .toList();
+
+        List<SubmitAnswerResponseDto> response = new ArrayList<>();
+
+        for (int i = 0; i < sorted.size(); i++) {
+            AnswerSubmission s = sorted.get(i);
+            response.add(
+                new SubmitAnswerResponseDto(
+                    s.getPlayerId(),
+                    s.getQuizId(),
+                    i + 1
+                )
+            );
+        }
+
+        template.convertAndSend(
+            "/sub/rooms/" + roomId + "/submissions",
+            response
+        );
     }
 }
