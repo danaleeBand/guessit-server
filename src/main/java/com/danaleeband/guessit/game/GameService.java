@@ -120,6 +120,7 @@ public class GameService {
         );
 
         game.submitAnswer(submission);
+        roomService.updateRoom(room);
 
         List<AnswerSubmission> sorted =
             game.getSubmissionsForCurrentQuiz(request.getQuizId()).stream()
