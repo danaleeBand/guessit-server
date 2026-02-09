@@ -11,7 +11,7 @@ public class GameSocketController {
 
     private final GameService gameService;
 
-    @MessageMapping("/rooms/{roomId}/start")
+    @MessageMapping("/rooms/{roomId}/game/start")
     public void startGame(@DestinationVariable long roomId) {
         gameService.startGame(roomId);
     }
