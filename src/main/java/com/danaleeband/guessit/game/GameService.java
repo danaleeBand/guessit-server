@@ -1,17 +1,23 @@
 package com.danaleeband.guessit.game;
 
+import com.danaleeband.guessit.game.dto.ScoreResponseDto;
 import com.danaleeband.guessit.game.dto.SubmitAnswerRequestDto;
 import com.danaleeband.guessit.game.dto.SubmitAnswerResponseDto;
 import com.danaleeband.guessit.global.GameState;
+import com.danaleeband.guessit.player.Player;
 import com.danaleeband.guessit.quiz.Quiz;
 import com.danaleeband.guessit.quiz.QuizService;
 import com.danaleeband.guessit.quiz.dto.HintResponseDto;
+import com.danaleeband.guessit.quiz.dto.PlayerResultDto;
+import com.danaleeband.guessit.quiz.dto.QuizResultDto;
 import com.danaleeband.guessit.room.Room;
 import com.danaleeband.guessit.room.RoomService;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.TaskScheduler;
@@ -34,7 +40,14 @@ public class GameService {
     public void startGame(long roomId) {
         Game game = createNewGame();
 
-        Room room = roomService.updateRoomStart(roomId, game);
+        Room room = roomService.getRoomById(roomId);
+
+        for (Player player : room.getPlayers()) {
+            game.initPlayerScore(player.getId());
+        }
+
+        room.setGame(game);
+        roomService.updateRoomStart(roomId, game);
 
         changeGameState(room, GameState.COUNTDOWN);
         scheduleGameStartCountDown(roomId, 3);
@@ -75,7 +88,22 @@ public class GameService {
             String hint = hints.get(i);
             HintResponseDto hintResponseDto = new HintResponseDto(i + 1, quiz.getId(), hint, quiz.getAnswer().length());
             taskScheduler.schedule(
-                () -> template.convertAndSend("/sub/rooms/" + roomId + "/game/hint", hintResponseDto),
+                () -> {
+                    Room room = roomService.getRoomById(roomId);
+                    Game game = room.getGame();
+
+                    if (game.getGameState() != GameState.HINT) {
+                        return;
+                    }
+
+                    template.convertAndSend(
+                        "/sub/rooms/" + roomId + "/game/hint",
+                        hintResponseDto
+                    );
+
+                    game.increaseRevealedHintCount();
+                    roomService.updateRoom(room);
+                },
                 Instant.now().plusSeconds((long) intervalSeconds * i)
             );
         }
@@ -88,7 +116,14 @@ public class GameService {
 
     private void onAllHintsFinished(long roomId) {
         Room room = roomService.getRoomById(roomId);
+        Game game = room.getGame();
+
+        if (game.getGameState() != GameState.HINT) {
+            return;
+        }
+
         changeGameState(room, GameState.SCORING);
+        processRoundScoring(room);
     }
 
     private void changeGameState(Room room, GameState gameState) {
@@ -104,6 +139,10 @@ public class GameService {
     public void submitAnswer(long roomId, SubmitAnswerRequestDto request) {
         Room room = roomService.getRoomById(roomId);
         Game game = room.getGame();
+
+        if (game.hasSubmitted(request.getPlayerId(), request.getQuizId())) {
+            return;
+        }
 
         Quiz currentQuiz = game.currentQuiz();
         if (currentQuiz.getId() != request.getQuizId()) {
@@ -143,6 +182,149 @@ public class GameService {
         template.convertAndSend(
             "/sub/rooms/" + roomId + "/submissions",
             response
+        );
+
+        if (game.getGameState() == GameState.HINT
+            && allPlayersSubmitted(room, game)) {
+            revealAllHints(room);
+            taskScheduler.schedule(
+                () -> onAllHintsFinished(roomId),
+                Instant.now().plusSeconds(3)
+            );
+        }
+    }
+
+    private boolean allPlayersSubmitted(Room room, Game game) {
+        long quizId = game.currentQuiz().getId();
+
+        int totalPlayers = room.getPlayers().size();
+        int submittedCount = game.getSubmissionsForCurrentQuiz(quizId).size();
+
+        return submittedCount >= totalPlayers;
+    }
+
+    private void revealAllHints(Room room) {
+        Game game = room.getGame();
+        Quiz quiz = game.currentQuiz();
+
+        for (int i = 0; i < quiz.getHints().size(); i++) {
+            template.convertAndSend(
+                "/sub/rooms/" + room.getId() + "/game/hint",
+                new HintResponseDto(
+                    i + 1,
+                    quiz.getId(),
+                    quiz.getHints().get(i),
+                    quiz.getAnswer().length()
+                )
+            );
+        }
+    }
+
+    private void processRoundScoring(Room room) {
+        Game game = room.getGame();
+        Quiz quiz = game.currentQuiz();
+
+        List<AnswerSubmission> submissions =
+            game.getSubmissionsForCurrentQuiz(quiz.getId());
+
+        // 정답만 필터 + 제출시간순 정렬
+        List<AnswerSubmission> correctSubmissions =
+            submissions.stream()
+                .filter(AnswerSubmission::isCorrect)
+                .sorted(Comparator.comparing(AnswerSubmission::getSubmittedAt))
+                .toList();
+
+        // 라운드 점수 계산용 Map
+        Map<Long, Integer> roundScoreMap = new HashMap<>();
+
+        for (int i = 0; i < correctSubmissions.size(); i++) {
+            AnswerSubmission s = correctSubmissions.get(i);
+            int rank = i + 1;
+            int score = calculateScore(rank);
+
+            roundScoreMap.put(s.getPlayerId(), score);
+            game.addScore(s.getPlayerId(), score);
+        }
+
+        // 전체 제출 기준으로 결과 DTO 생성
+        List<PlayerResultDto> results = submissions.stream()
+            .sorted(Comparator.comparing(AnswerSubmission::getSubmittedAt))
+            .map(s -> new PlayerResultDto(
+                s.getPlayerId(),
+                s.isCorrect(),
+                s.getAnswer(),
+                calculateRank(s, correctSubmissions),
+                roundScoreMap.getOrDefault(s.getPlayerId(), 0)
+            ))
+            .toList();
+
+        QuizResultDto response = new QuizResultDto(
+            game.getCurrentQuizIndex() + 1,
+            quiz.getId(),
+            results,
+            quiz.getAnswer()
+        );
+
+        template.convertAndSend(
+            "/sub/rooms/" + room.getId() + "/answer",
+            response
+        );
+
+        recalculateRanks(game);
+        roomService.updateRoom(room);
+        publishTotalScores(room);
+    }
+
+    private void recalculateRanks(Game game) {
+        List<PlayerScore> sorted =
+            game.getPlayerScores().values().stream()
+                .sorted((a, b) -> b.getScore() - a.getScore())
+                .toList();
+
+        for (int i = 0; i < sorted.size(); i++) {
+            sorted.get(i).setRank(i + 1);
+        }
+    }
+
+    private int calculateScore(int rank) {
+        if (rank == 1) {
+            return 5;
+        }
+        if (rank == 2) {
+            return 3;
+        }
+        return 1;
+    }
+
+    private int calculateRank(AnswerSubmission submission,
+        List<AnswerSubmission> correctSubmissions) {
+
+        for (int i = 0; i < correctSubmissions.size(); i++) {
+            if (correctSubmissions.get(i).getPlayerId()
+                == submission.getPlayerId()) {
+                return i + 1;
+            }
+        }
+
+        return 0;
+    }
+
+    private void publishTotalScores(Room room) {
+        Game game = room.getGame();
+
+        List<ScoreResponseDto> scores =
+            game.getPlayerScores().values().stream()
+                .sorted((a, b) -> b.getScore() - a.getScore())
+                .map(ps -> new ScoreResponseDto(
+                    ps.getPlayerId(),
+                    ps.getScore(),
+                    ps.getRank()
+                ))
+                .toList();
+
+        template.convertAndSend(
+            "/sub/rooms/" + room.getId() + "/scores",
+            scores
         );
     }
 }
