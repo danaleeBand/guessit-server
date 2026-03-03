@@ -8,6 +8,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -48,20 +50,39 @@ public class Quiz {
     private String hint6;
 
     @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt;
+    private String createdAt;
 
     @Column(name = "updated_at", nullable = false)
-    private LocalDateTime updatedAt;
+    private String updatedAt;
+
+    public List<String> getHints() {
+        List<String> hints = new ArrayList<>();
+        hints.add(hint1);
+        hints.add(hint2);
+        hints.add(hint3);
+        hints.add(hint4);
+        hints.add(hint5);
+        hints.add(hint6);
+
+        return hints;
+    }
 
     @PrePersist
     public void prePersist() {
         LocalDateTime now = LocalDateTime.now();
-        this.createdAt = now;
-        this.updatedAt = now;
+        this.createdAt = now.toString();
+        this.updatedAt = now.toString();
     }
 
     @PreUpdate
     public void preUpdate() {
-        this.updatedAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now().toString();
+    }
+
+    public boolean isCorrect(String submittedAnswer) {
+        if (submittedAnswer == null) {
+            return false;
+        }
+        return answer.equalsIgnoreCase(submittedAnswer.trim());
     }
 }

@@ -1,4 +1,4 @@
-package com.danaleeband.guessit.room.repository;
+package com.danaleeband.guessit.game;
 
 import com.danaleeband.guessit.room.Room;
 import java.util.List;
@@ -6,7 +6,7 @@ import java.util.Optional;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface RoomRepository {
+public interface GameRepository {
 
     Long save(Room room);
 

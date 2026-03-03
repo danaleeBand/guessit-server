@@ -3,9 +3,9 @@ package com.danaleeband.guessit.room;
 import static com.danaleeband.guessit.global.Constants.ALPHABET_NUMBER;
 import static com.danaleeband.guessit.global.Constants.ROOM_CODE_LENGTH;
 
+import com.danaleeband.guessit.game.Game;
 import com.danaleeband.guessit.player.Player;
 import com.danaleeband.guessit.player.PlayerService;
-import com.danaleeband.guessit.quiz.QuizService;
 import com.danaleeband.guessit.room.dto.GameReadyRequestDto;
 import com.danaleeband.guessit.room.dto.RoomCreateRequestDto;
 import com.danaleeband.guessit.room.dto.RoomDetailDto;
@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
@@ -32,8 +31,6 @@ import org.springframework.web.server.ResponseStatusException;
 @RequiredArgsConstructor
 public class RoomService {
 
-    private final RedisTemplate<String, Object> redisTemplate;
-    private final QuizService quizService;
     private final PlayerService playerService;
     private final RoomRepository roomRepository;
     private final SimpMessagingTemplate template;
@@ -56,6 +53,21 @@ public class RoomService {
         broadcastRoomDetail(id);
 
         return id;
+    }
+
+    public Room updateRoomStart(long roomId, Game game) {
+        Room room = getRoomById(roomId);
+        if (room.getGame() != null) {
+            return room;
+        }
+
+        room.setGame(game);
+        room.setPlaying(true);
+        roomRepository.update(room);
+        broadcastRoomList();
+        broadcastRoomDetail(roomId);
+
+        return room;
     }
 
     private String generateUniqueRoomCode() {
@@ -122,7 +134,7 @@ public class RoomService {
 
         Player player = playerService.findPlayerById(roomJoinRequestDto.getPlayerId());
         room.addPlayer(player);
-        roomRepository.updatePlayer(room);
+        roomRepository.update(room);
 
         broadcastRoomList();
         broadcastRoomDetail(roomId);
@@ -146,7 +158,7 @@ public class RoomService {
         if (room.isEmpty()) {
             roomRepository.delete(roomId);
         } else {
-            roomRepository.updatePlayer(room);
+            roomRepository.update(room);
         }
 
         broadcastRoomList();
@@ -191,7 +203,7 @@ public class RoomService {
     }
 
     public void updateRoom(Room room) {
-        roomRepository.updatePlayer(room);
+        roomRepository.update(room);
     }
 
     public void broadcastRoomList() {

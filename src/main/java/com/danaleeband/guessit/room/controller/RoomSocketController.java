@@ -31,7 +31,6 @@ public class RoomSocketController {
         }
     }
 
-
     @MessageMapping("/rooms/leave")
     public RoomLeaveResponseDto leaveRoom(@Payload RoomLeaveRequestDto requestDto) {
         return roomService.leaveRoom(requestDto);
