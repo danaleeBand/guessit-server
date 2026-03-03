@@ -180,7 +180,7 @@ public class GameService {
         }
 
         template.convertAndSend(
-            "/sub/rooms/" + roomId + "/submissions",
+            "/sub/rooms/" + roomId + "/game/submissions",
             response
         );
 
@@ -266,7 +266,7 @@ public class GameService {
         );
 
         template.convertAndSend(
-            "/sub/rooms/" + room.getId() + "/answer",
+            "/sub/rooms/" + room.getId() + "/game/answer",
             response
         );
 
@@ -323,7 +323,7 @@ public class GameService {
                 .toList();
 
         template.convertAndSend(
-            "/sub/rooms/" + room.getId() + "/scores",
+            "/sub/rooms/" + room.getId() + "/game/scores",
             scores
         );
     }

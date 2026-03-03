@@ -17,7 +17,7 @@ public class GameSocketController {
         gameService.startGame(roomId);
     }
 
-    @MessageMapping("/rooms/{roomId}/submit")
+    @MessageMapping("/rooms/{roomId}/game/submit")
     public void submitAnswer(@DestinationVariable long roomId, SubmitAnswerRequestDto request) {
         gameService.submitAnswer(roomId, request);
     }
