@@ -70,6 +70,15 @@ public class RoomService {
         return room;
     }
 
+    public void updateRoomEnd(long roomId) {
+        Room room = getRoomById(roomId);
+        room.setGame(null);
+        room.setPlaying(false);
+        roomRepository.update(room);
+        broadcastRoomList();
+        broadcastRoomDetail(roomId);
+    }
+
     private String generateUniqueRoomCode() {
         Set<String> roomCodeSet = roomRepository.findAll().stream()
             .map(Room::getCode)

@@ -357,6 +357,9 @@ public class GameService {
             scheduleGameStartCountDown(roomId, 3);
         } else {
             changeGameState(room, GameState.FINISHED);
+            room.setGame(null);
+            roomService.updateRoom(room);
+            roomService.updateRoomEnd(roomId);
         }
     }
 
