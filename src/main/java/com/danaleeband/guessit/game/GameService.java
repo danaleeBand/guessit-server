@@ -310,7 +310,11 @@ public class GameService {
                 .toList();
 
         for (int i = 0; i < sorted.size(); i++) {
-            sorted.get(i).setRank(i + 1);
+            if (i > 0 && sorted.get(i).getScore() == sorted.get(i - 1).getScore()) {
+                sorted.get(i).setRank(sorted.get(i - 1).getRank());
+            } else {
+                sorted.get(i).setRank(i + 1);
+            }
         }
     }
 
@@ -342,7 +346,7 @@ public class GameService {
 
         List<ScoreResponseDto> scores =
             game.getPlayerScores().values().stream()
-                .sorted((a, b) -> b.getScore() - a.getScore())
+                .sorted(Comparator.comparingInt(PlayerScore::getRank))
                 .map(ps -> new ScoreResponseDto(
                     ps.getPlayerId(),
                     ps.getScore(),
