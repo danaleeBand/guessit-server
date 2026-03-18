@@ -18,6 +18,8 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ScheduledFuture;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.TaskScheduler;
@@ -31,6 +33,8 @@ public class GameService {
     private final RoomService roomService;
     private final TaskScheduler taskScheduler;
     private final SimpMessagingTemplate template;
+
+    private static final String ROOM_TOPIC_PREFIX = "/sub/rooms/";
 
     public Game createNewGame() {
         List<Quiz> quizList = quizService.getRandomQuizzes();
@@ -58,8 +62,8 @@ public class GameService {
             int count = i;
 
             taskScheduler.schedule(
-                () -> template.convertAndSend("/sub/rooms/" + roomId + "/game/countdown", count),
-                Instant.now().plusSeconds(seconds - i)
+                () -> template.convertAndSend(ROOM_TOPIC_PREFIX + roomId + "/game/countdown", count),
+                Instant.now().plusSeconds(seconds - (long) i)
             );
         }
 
@@ -81,13 +85,18 @@ public class GameService {
         scheduleHints(roomId, quiz);
     }
 
+    private final Map<Long, List<ScheduledFuture<?>>> scheduledHintFutures = new ConcurrentHashMap<>();
+
     private void scheduleHints(long roomId, Quiz quiz) {
         int intervalSeconds = 5;
         List<String> hints = quiz.getHints();
+        List<ScheduledFuture<?>> futures = new ArrayList<>();
+
         for (int i = 0; i < hints.size(); i++) {
             String hint = hints.get(i);
             HintResponseDto hintResponseDto = new HintResponseDto(i + 1, quiz.getId(), hint, quiz.getAnswer().length());
-            taskScheduler.schedule(
+
+            ScheduledFuture<?> future = taskScheduler.schedule(
                 () -> {
                     Room room = roomService.getRoomById(roomId);
                     Game game = room.getGame();
@@ -97,7 +106,7 @@ public class GameService {
                     }
 
                     template.convertAndSend(
-                        "/sub/rooms/" + roomId + "/game/hint",
+                        ROOM_TOPIC_PREFIX + roomId + "/game/hint",
                         hintResponseDto
                     );
 
@@ -106,12 +115,17 @@ public class GameService {
                 },
                 Instant.now().plusSeconds((long) intervalSeconds * i)
             );
+
+            futures.add(future);
         }
 
-        taskScheduler.schedule(
+        ScheduledFuture<?> endFuture = taskScheduler.schedule(
             () -> onAllHintsFinished(roomId),
             Instant.now().plusSeconds((long) intervalSeconds * hints.size())
         );
+        futures.add(endFuture);
+
+        scheduledHintFutures.put(roomId, futures);
     }
 
     private void onAllHintsFinished(long roomId) {
@@ -133,7 +147,7 @@ public class GameService {
     }
 
     private void publishGameState(long roomId, GameState gameState) {
-        template.convertAndSend("/sub/rooms/" + roomId + "/game/state", gameState.name());
+        template.convertAndSend(ROOM_TOPIC_PREFIX + roomId + "/game/state", gameState.name());
     }
 
     public void submitAnswer(long roomId, SubmitAnswerRequestDto request) {
@@ -174,13 +188,13 @@ public class GameService {
                 new SubmitAnswerResponseDto(
                     s.getPlayerId(),
                     s.getQuizId(),
-                    i + 1
+                    i + 1L
                 )
             );
         }
 
         template.convertAndSend(
-            "/sub/rooms/" + roomId + "/game/submissions",
+            ROOM_TOPIC_PREFIX + roomId + "/game/submissions",
             response
         );
 
@@ -204,20 +218,34 @@ public class GameService {
     }
 
     private void revealAllHints(Room room) {
-        Game game = room.getGame();
-        Quiz quiz = game.currentQuiz();
+        long roomId = room.getId();
 
-        for (int i = 0; i < quiz.getHints().size(); i++) {
+        Room freshRoom = roomService.getRoomById(roomId);
+        Game game = freshRoom.getGame();
+        Quiz quiz = game.currentQuiz();
+        List<String> hints = quiz.getHints();
+
+        List<ScheduledFuture<?>> futures = scheduledHintFutures.remove(roomId);
+        if (futures != null) {
+            futures.forEach(f -> f.cancel(false));
+        }
+
+        int alreadyRevealed = game.getRevealedHintCount();
+
+        for (int i = alreadyRevealed; i < hints.size(); i++) {
             template.convertAndSend(
-                "/sub/rooms/" + room.getId() + "/game/hint",
+                ROOM_TOPIC_PREFIX + roomId + "/game/hint",
                 new HintResponseDto(
                     i + 1,
                     quiz.getId(),
-                    quiz.getHints().get(i),
+                    hints.get(i),
                     quiz.getAnswer().length()
                 )
             );
         }
+
+        game.setRevealedHintCount(hints.size());
+        roomService.updateRoom(room);
     }
 
     private void processRoundScoring(Room room) {
@@ -266,7 +294,7 @@ public class GameService {
         );
 
         template.convertAndSend(
-            "/sub/rooms/" + room.getId() + "/game/answer",
+            ROOM_TOPIC_PREFIX + room.getId() + "/game/answer",
             response
         );
 
@@ -323,7 +351,7 @@ public class GameService {
                 .toList();
 
         template.convertAndSend(
-            "/sub/rooms/" + room.getId() + "/game/scores",
+            ROOM_TOPIC_PREFIX + room.getId() + "/game/scores",
             scores
         );
     }

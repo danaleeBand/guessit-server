@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import lombok.Getter;
+import lombok.Setter;
 import org.springframework.data.redis.core.RedisHash;
 
 @Getter
@@ -42,6 +43,7 @@ public class Game implements Serializable {
         this.gameState = gameState;
     }
 
+    @Setter
     @Getter
     private int revealedHintCount = 0;
 
@@ -53,7 +55,7 @@ public class Game implements Serializable {
         revealedHintCount = 0;
     }
 
-    private List<AnswerSubmission> submissions = new ArrayList<>();
+    private final List<AnswerSubmission> submissions = new ArrayList<>();
 
     public void submitAnswer(AnswerSubmission submission) {
         submissions.add(submission);
