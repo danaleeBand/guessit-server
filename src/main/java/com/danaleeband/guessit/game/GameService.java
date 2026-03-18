@@ -301,6 +301,11 @@ public class GameService {
         recalculateRanks(game);
         roomService.updateRoom(room);
         publishTotalScores(room);
+
+        taskScheduler.schedule(
+            () -> scheduleNextRoundOrEnd(room.getId()),
+            Instant.now().plusSeconds(5)
+        );
     }
 
     private void recalculateRanks(Game game) {
@@ -339,6 +344,20 @@ public class GameService {
         }
 
         return 0;
+    }
+
+    private void scheduleNextRoundOrEnd(long roomId) {
+        Room room = roomService.getRoomById(roomId);
+        Game game = room.getGame();
+
+        if (game.hasNextQuiz()) {
+            game.moveToNextQuiz();
+            game.resetRevealedHintCount();
+            changeGameState(room, GameState.COUNTDOWN);
+            scheduleGameStartCountDown(roomId, 3);
+        } else {
+            changeGameState(room, GameState.FINISHED);
+        }
     }
 
     private void publishTotalScores(Room room) {
