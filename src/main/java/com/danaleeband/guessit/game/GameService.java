@@ -357,6 +357,11 @@ public class GameService {
             game.moveToNextQuiz();
             game.resetRevealedHintCount();
             game.clearSubmissions();
+            template.convertAndSend(
+                ROOM_TOPIC_PREFIX + roomId + "/game/answer",
+                QuizResultDto.empty()
+            );
+
             changeGameState(room, GameState.COUNTDOWN);
             scheduleGameStartCountDown(roomId, 3);
         } else {

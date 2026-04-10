@@ -12,4 +12,13 @@ public class QuizResultDto {
     private long quizId;
     private List<PlayerResultDto> results;
     private String answer;
+
+    public static QuizResultDto empty() {
+        return new QuizResultDto(
+            0,
+            0L,
+            List.of(),
+            ""
+        );
+    }
 }
