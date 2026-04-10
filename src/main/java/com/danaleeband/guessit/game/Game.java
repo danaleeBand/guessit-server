@@ -73,6 +73,10 @@ public class Game implements Serializable {
                 && s.getQuizId() == quizId);
     }
 
+    public void clearSubmissions() {
+        submissions.clear();
+    }
+
     @Getter
     private Map<Long, PlayerScore> playerScores = new HashMap<>();
 

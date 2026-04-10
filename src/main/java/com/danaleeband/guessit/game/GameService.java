@@ -94,7 +94,6 @@ public class GameService {
 
         for (int i = 0; i < hints.size(); i++) {
             String hint = hints.get(i);
-            HintResponseDto hintResponseDto = new HintResponseDto(i + 1, quiz.getId(), hint, quiz.getAnswer().length());
 
             ScheduledFuture<?> future = taskScheduler.schedule(
                 () -> {
@@ -104,6 +103,10 @@ public class GameService {
                     if (game.getGameState() != GameState.HINT) {
                         return;
                     }
+
+                    HintResponseDto hintResponseDto = new HintResponseDto(game.getCurrentQuizIndex() + 1, quiz.getId(),
+                        hint,
+                        quiz.getAnswer().length());
 
                     template.convertAndSend(
                         ROOM_TOPIC_PREFIX + roomId + "/game/hint",
@@ -353,6 +356,7 @@ public class GameService {
         if (game.hasNextQuiz()) {
             game.moveToNextQuiz();
             game.resetRevealedHintCount();
+            game.clearSubmissions();
             changeGameState(room, GameState.COUNTDOWN);
             scheduleGameStartCountDown(roomId, 3);
         } else {
