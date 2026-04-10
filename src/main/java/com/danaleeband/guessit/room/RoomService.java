@@ -74,6 +74,15 @@ public class RoomService {
         Room room = getRoomById(roomId);
         room.setGame(null);
         room.setPlaying(false);
+
+        for (Player player : room.getPlayers()) {
+            player.setReady(false);
+        }
+
+        if (room.getCreator() != null) {
+            room.getCreator().setReady(false);
+        }
+
         roomRepository.update(room);
         broadcastRoomList();
         broadcastRoomDetail(roomId);
