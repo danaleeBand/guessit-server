@@ -361,6 +361,10 @@ public class GameService {
                 ROOM_TOPIC_PREFIX + roomId + "/game/answer",
                 QuizResultDto.empty()
             );
+            template.convertAndSend(
+                ROOM_TOPIC_PREFIX + roomId + "/game/submissions",
+                List.of()
+            );
 
             changeGameState(room, GameState.COUNTDOWN);
             scheduleGameStartCountDown(roomId, 3);
