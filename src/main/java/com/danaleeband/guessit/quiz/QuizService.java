@@ -52,4 +52,8 @@ public class QuizService {
     public List<Quiz> getRandomQuizzes() {
         return quizRepository.findTop10ByOrderByRandom();
     }
+
+    public List<Quiz> getLatestQuizzes() {
+        return quizRepository.findTop10ByOrderByCreatedAtDesc();
+    }
 }

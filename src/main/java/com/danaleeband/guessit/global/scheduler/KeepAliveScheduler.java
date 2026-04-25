@@ -17,7 +17,7 @@ public class KeepAliveScheduler {
 
     @Scheduled(cron = "0 0 4 * * *", zone = "Asia/Seoul")
     public void keepAlive() {
-        var quizzes = quizService.getRandomQuizzes();
+        var quizzes = quizService.getLatestQuizzes();
         log.info("[KeepAlive] quiz 조회 완료: {}개", quizzes.size());
 
         var rooms = roomService.getAllRooms();

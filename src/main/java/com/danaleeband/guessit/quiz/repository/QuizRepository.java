@@ -12,4 +12,5 @@ public interface QuizRepository {
 
     List<Quiz> findTop10ByOrderByRandom();
 
+    List<Quiz> findTop10ByOrderByCreatedAtDesc();
 }
