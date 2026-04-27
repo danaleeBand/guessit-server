@@ -16,7 +16,7 @@ public class DailyQuizScheduler {
     private final RoomService roomService;
 
     @Scheduled(cron = "0 0 4 * * *", zone = "Asia/Seoul")
-    public void syncDailyQuizData() {
+    public void logDailyStatistics() {
         var quizzes = quizService.getLatestQuizzes();
         log.info("[DailyQuiz] quiz : {}개", quizzes.size());
 
