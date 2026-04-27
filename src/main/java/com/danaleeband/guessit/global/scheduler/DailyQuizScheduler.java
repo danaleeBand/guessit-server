@@ -18,9 +18,9 @@ public class DailyQuizScheduler {
     @Scheduled(cron = "0 0 4 * * *", zone = "Asia/Seoul")
     public void syncDailyQuizData() {
         var quizzes = quizService.getLatestQuizzes();
-        log.info("[DailyQuiz] quiz 조회 완료: {}개", quizzes.size());
+        log.info("[DailyQuiz] quiz : {}개", quizzes.size());
 
         var rooms = roomService.getAllRooms();
-        log.info("[DailyQuiz] room 조회 완료: {}개", rooms.size());
+        log.info("[DailyQuiz] room : {}개", rooms.size());
     }
 }
