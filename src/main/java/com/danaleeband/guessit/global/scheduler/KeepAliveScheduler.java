@@ -1,26 +1,29 @@
 package com.danaleeband.guessit.global.scheduler;
 
-import com.danaleeband.guessit.quiz.QuizService;
-import com.danaleeband.guessit.room.RoomService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class KeepAliveScheduler {
 
-    private final QuizService quizService;
-    private final RoomService roomService;
+    private final RestTemplate restTemplate;
 
-    @Scheduled(cron = "0 0 4 * * *", zone = "Asia/Seoul")
-    public void keepAlive() {
-        var quizzes = quizService.getLatestQuizzes();
-        log.info("[KeepAlive] quiz 조회 완료: {}개", quizzes.size());
+    @Scheduled(cron = "0 */10 * * * *")
+    public void pingSelf() {
+        try {
+            String response = restTemplate.getForObject(
+                "https://guessit-server.onrender.com/health",
+                String.class
+            );
 
-        var rooms = roomService.getAllRooms();
-        log.info("[KeepAlive] room 조회 완료: {}개", rooms.size());
+            log.info("[KeepAlive] self ping response={}", response);
+        } catch (Exception e) {
+            log.error("[KeepAlive] self ping failed", e);
+        }
     }
 }
